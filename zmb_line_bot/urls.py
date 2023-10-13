@@ -16,10 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-import callback.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('callback', include('callback.urls')),
-    path('update_server/', callback.views.update_server, name='update_server'),
 ]
