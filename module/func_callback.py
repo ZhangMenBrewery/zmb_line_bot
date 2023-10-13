@@ -271,6 +271,8 @@ def IntrTheBeer(event): #說明單一酒款
         else:
             ibu='🌿🌿🌿🌿🌿'
 
+        feature_text = '特色:' + str(thebeer[0].Feature).replace('None', '')
+        description_text = '說明:' + str(thebeer[0].Description).replace('None', '')
 
         bubble=BubbleContainer(
             direction='ltr',
@@ -300,8 +302,8 @@ def IntrTheBeer(event): #說明單一酒款
                         ]
                     ),
                     TextComponent(text=AwardRecord, weight='bold', color='#666666', size='md', margin='md', wrap=True),
-                    TextComponent(text=str(thebeer[0].Feature).replace('None',' ')+' ', color='#666666', size='sm', margin='md', wrap=True),
-                    TextComponent(text=str(thebeer[0].Description).replace('None',' ')+' ', color='#666666', size='sm', margin='md', wrap=True),
+                    TextComponent(text=feature_text, color='#666666', size='sm', margin='md', wrap=True),
+                    TextComponent(text=description_text, color='#666666', size='sm', margin='md', wrap=True),
                     BoxComponent(
                         layout='vertical',
                         position='absolute',
@@ -373,7 +375,9 @@ def IntrBeerMenuFlex(event): #說明酒款
             else:
                 ibu='🌿🌿🌿🌿🌿'
 
-
+            feature_text = '特色:' + str(beers[b].Feature).replace('None', '')
+            description_text = '說明:' + str(beers[b].Description).replace('None', '')
+            
             bubbles.append(#酒單排版
                 BubbleContainer(
                     direction='ltr',
@@ -403,8 +407,8 @@ def IntrBeerMenuFlex(event): #說明酒款
                                 ]
                             ),
                             TextComponent(text=AwardRecord, weight='bold', color='#666666', size='md', margin='md', wrap=True),
-                            TextComponent(text=str(beers[b].Feature).replace('None',' ')+' ', color='#666666', size='sm', margin='md', wrap=True),
-                            TextComponent(text=str(beers[b].Description).replace('None',' ')+' ', color='#666666', size='sm', margin='md', wrap=True),
+                            TextComponent(text=feature_text, color='#666666', size='sm', margin='md', wrap=True),
+                            TextComponent(text=description_text, color='#666666', size='sm', margin='md', wrap=True),
                             BoxComponent(
                                 layout='vertical',
                                 position='absolute',
