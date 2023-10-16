@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class beer(models.Model):
-    tapNum = models.CharField(max_length=2, blank=True, default='')    #酒頭順序
+    tapNum = models.IntegerField()    #酒頭順序
     time = models.CharField(max_length=10, null=False) #時間
     Style = models.CharField(max_length=40, null=False) #酒款類型
     eName = models.CharField(max_length=40, blank=True, default='') #英文名稱
