@@ -3,7 +3,7 @@ from django.db.models import Case, When, Value, IntegerField
 from callback.models import beer, can
 
 class beerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'time', 'Style', 'eName', 'cName', 'ABV', 'IBU', 'SRM', 'Keyword', 'Description')
+    list_display = ('id', 'tapNum', 'time', 'Style', 'eName', 'cName', 'ABV', 'IBU', 'SRM', 'Keyword', 'Description')
     
     # 使用Case和When來定義排序條件，將time為'停產'的放在最後面
     ordering = (
