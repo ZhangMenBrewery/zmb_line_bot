@@ -126,7 +126,7 @@ def Other(event): #一般訊息
         if len(event.message.text)>1 and beer.objects.filter(cName__icontains=event.message.text).count()>0:#單一酒款
             IntrTheBeer(event)
         elif event.message.text!=',' and len(event.message.text)<6 and beer.objects.filter(Keyword__icontains=event.message.text).count()>0:#關鍵字
-            beers = beer.objects.filter(Keyword__icontains=event.message.text)
+            beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=event.message.text)
             KeyWordBeer(event,beers)
         # elif ('黑' in event.message.text) and beer.objects.exclude(time='停產').filter(SRM__gt=25).count()>0:#關鍵字
         #     beers = beer.objects.exclude(time='停產').filter(SRM__gt=25)
@@ -135,7 +135,7 @@ def Other(event): #一般訊息
         #     beers = beer.objects.exclude(time='停產').filter(IBU__lt=15)
         #     KeyWordBeer(event,beers)
         elif ('得獎' in event.message.text) and len(event.message.text)<6:#關鍵字
-            beers = beer.objects.exclude(AwardRecord='')
+            beers = beer.objects.exclude(AwardRecord='').exclude(time='停產')
             KeyWordBeer(event,beers)
         elif (event.message.text in ['隨便','青菜','盲飲']) and len(event.message.text)<6:#隨機
             beers = beer.objects.filter(cName=get_random())
