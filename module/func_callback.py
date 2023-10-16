@@ -101,6 +101,25 @@ def HappyHour(event): #快樂時光
         line_bot_api.reply_message(event.reply_token,
         TextSendMessage(text='發生錯誤'))
 
+def reply_message_with_quick_reply(event):
+    items = [
+        QuickReplyButton(
+            action=MessageAction(label="不苦", text="不苦")
+        ),
+        QuickReplyButton(
+            action=MessageAction(label="水果", text="水果")
+        ),
+        QuickReplyButton(
+            action=MessageAction(label="黑", text="黑")
+        ),
+        QuickReplyButton(
+            action=MessageAction(label="全部", text="全部")
+        )
+    ]
+    quick_reply = QuickReply(items=items)
+    message = TextSendMessage(text="你想喝哪一種酒?",quick_reply=quick_reply)
+    line_bot_api.reply_message(event.reply_token,message)
+
 def Other(event): #一般訊息
     try:
         if len(event.message.text)>1 and beer.objects.filter(cName__icontains=event.message.text).count()>0:#單一酒款
@@ -377,7 +396,7 @@ def IntrBeerMenuFlex(event): #說明酒款
 
             feature_text = '特色:' + str(beers[b].Feature).replace('None', '')
             description_text = '說明:' + str(beers[b].Description).replace('None', '')
-            
+
             bubbles.append(#酒單排版
                 BubbleContainer(
                     direction='ltr',
