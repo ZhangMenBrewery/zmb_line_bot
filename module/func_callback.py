@@ -108,9 +108,16 @@ def reply_message_with_quick_reply(event):
         allkeywords.extend(keyword.split(','))
     unique_keywords = list(set(allkeywords))
     unique_keywords.append("全部")
-    quick_reply = [QuickReplyButton(action=MessageAction(label=keyword, text=keyword)) for keyword in unique_keywords]
-    message = TextSendMessage(text="你想喝哪一種酒?",quick_reply=quick_reply)
-    line_bot_api.reply_message(event.reply_token,message)
+    
+    # 確保按鈕數量不超過LINE的限制
+    max_buttons = 13  # 假設最大按鈕數量是13，您需要查找實際的限制
+    if len(unique_keywords) > max_buttons:
+        unique_keywords = unique_keywords[:max_buttons]
+
+    buttons = [QuickReplyButton(action=MessageAction(label=keyword, text=keyword)) for keyword in unique_keywords]
+    quick_reply = QuickReply(items=buttons)
+    message = TextSendMessage(text="你想喝哪一種酒?", quick_reply=quick_reply)
+    line_bot_api.reply_message(event.reply_token, message)
 
 def Other(event): #一般訊息
     try:
