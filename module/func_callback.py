@@ -103,11 +103,13 @@ def HappyHour(event): #快樂時光
 
 def reply_message_with_quick_reply(event):
     keywords = [abeer.Keyword for abeer in beer.objects.exclude(time='停產')]
+    print(keywords)
     allkeywords = []
     for keyword in keywords:
         allkeywords.extend(keyword.split(','))
     unique_keywords = list(set(allkeywords))
     unique_keywords.append("全部")
+    print(unique_keywords)
     
     # 確保按鈕數量不超過LINE的限制
     max_buttons = 13  # 假設最大按鈕數量是13，您需要查找實際的限制
@@ -116,7 +118,7 @@ def reply_message_with_quick_reply(event):
 
     buttons = [QuickReplyButton(action=MessageAction(label=keyword, text=keyword)) for keyword in unique_keywords]
     quick_reply = QuickReply(items=buttons)
-    message = TextSendMessage(text=str(len(unique_keywords)), quick_reply=quick_reply)
+    message = TextSendMessage(text="您想要哪種啤酒?", quick_reply=quick_reply)
     line_bot_api.reply_message(event.reply_token, message)
 
 def Other(event): #一般訊息
