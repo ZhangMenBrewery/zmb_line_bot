@@ -118,7 +118,7 @@ def reply_message_with_quick_reply(event):
 
     buttons = [QuickReplyButton(action=MessageAction(label=keyword, text=keyword)) for keyword in unique_keywords]
     quick_reply = QuickReply(items=buttons)
-    message = TextSendMessage(text="您喜歡哪種特色酒款?選取下面這些類別給你相關酒款介紹，或是直接輸入酒款名稱做查詢。", quick_reply=quick_reply)
+    message = TextSendMessage(text="您好，請直接輸入酒款名稱做查詢，或選取下面關鍵字給你相關酒款介紹，謝謝。", quick_reply=quick_reply)
     line_bot_api.reply_message(event.reply_token, message)
 
 def Other(event): #一般訊息
