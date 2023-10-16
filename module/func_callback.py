@@ -114,7 +114,7 @@ def reply_message_with_quick_reply(event):
     if len(unique_keywords) > max_buttons:
         unique_keywords = unique_keywords[:max_buttons]
 
-    unique_keywords.append(["得獎","盲飲","全部"])
+    unique_keywords.extend(["得獎","盲飲","全部"])
 
     buttons = [QuickReplyButton(action=MessageAction(label=keyword, text=keyword)) for keyword in unique_keywords]
     quick_reply = QuickReply(items=buttons)
