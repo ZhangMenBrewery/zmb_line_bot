@@ -22,7 +22,7 @@ def update_server(request):
 
         try:
             repo.git.pull('origin', 'main')
-            subprocess.check_call(['pip', 'install', '-r', 'requirements.txt'], cwd=repo_path)
+            # subprocess.check_call(['pip', 'install', '-r', 'requirements.txt'], cwd=repo_path)
             subprocess.check_call(['python', 'manage.py', 'makemigrations'], cwd=repo_path)
             subprocess.check_call(['python', 'manage.py', 'migrate'], cwd=repo_path)
             return JsonResponse({'message': 'Updated PythonAnywhere and migrated sucessfully'}, status=200)
