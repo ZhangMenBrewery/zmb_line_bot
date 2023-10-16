@@ -106,7 +106,8 @@ def reply_message_with_quick_reply(event):
     print(keywords)
     allkeywords = []
     for keyword in keywords:
-        allkeywords.extend(keyword.split(','))
+        if keyword != '':
+            allkeywords.extend(keyword.split(','))
     unique_keywords = list(set(allkeywords))
     unique_keywords.append("全部")
     print(unique_keywords)
