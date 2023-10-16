@@ -53,8 +53,8 @@ def callback(request):
                     mtext = event.message.text
                     if '訂位' in mtext:
                         func_callback.Reserver(event)
-                    elif 'happy hour' in mtext.lower() or '快樂時光' in mtext:
-                        func_callback.HappyHour(event)
+                    # elif 'happy hour' in mtext.lower() or '快樂時光' in mtext:
+                    #     func_callback.HappyHour(event)
                     elif '酒單' in mtext or '酒款' in mtext: 
                         func_callback.IntrBeerMenuFlex(event)
                     elif '鋁罐' in mtext or '鋁罐介紹' in mtext: 
