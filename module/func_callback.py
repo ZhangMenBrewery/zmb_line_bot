@@ -103,23 +103,22 @@ def HappyHour(event): #快樂時光
 
 def reply_message_with_quick_reply(event):
     keywords = [abeer.Keyword for abeer in beer.objects.exclude(time='停產')]
-    print(keywords)
     allkeywords = []
     for keyword in keywords:
         if keyword != '':
             allkeywords.extend(keyword.split(','))
     unique_keywords = list(set(allkeywords))
-    unique_keywords.append("全部")
-    print(unique_keywords)
     
     # 確保按鈕數量不超過LINE的限制
-    max_buttons = 13  # 假設最大按鈕數量是13，您需要查找實際的限制
+    max_buttons = 10  # 假設最大按鈕數量是13，您需要查找實際的限制
     if len(unique_keywords) > max_buttons:
         unique_keywords = unique_keywords[:max_buttons]
 
+    unique_keywords.append(["得獎","盲飲","全部"])
+
     buttons = [QuickReplyButton(action=MessageAction(label=keyword, text=keyword)) for keyword in unique_keywords]
     quick_reply = QuickReply(items=buttons)
-    message = TextSendMessage(text="您想要哪種啤酒?", quick_reply=quick_reply)
+    message = TextSendMessage(text="請選取下面這些分類，或是直接輸入酒款名稱做查詢。", quick_reply=quick_reply)
     line_bot_api.reply_message(event.reply_token, message)
 
 def Other(event): #一般訊息
@@ -129,16 +128,16 @@ def Other(event): #一般訊息
         elif event.message.text!=',' and len(event.message.text)<6 and beer.objects.filter(Keyword__icontains=event.message.text).count()>0:#關鍵字
             beers = beer.objects.filter(Keyword__icontains=event.message.text)
             KeyWordBeer(event,beers)
-        elif ('黑' in event.message.text) and beer.objects.exclude(time='停產').filter(SRM__gt=25).count()>0:#關鍵字
-            beers = beer.objects.exclude(time='停產').filter(SRM__gt=25)
-            KeyWordBeer(event,beers)
-        elif ('不苦' in event.message.text) and beer.objects.exclude(time='停產').filter(IBU__lt=15).count()>0:#關鍵字
-            beers = beer.objects.exclude(time='停產').filter(IBU__lt=15)
-            KeyWordBeer(event,beers)
+        # elif ('黑' in event.message.text) and beer.objects.exclude(time='停產').filter(SRM__gt=25).count()>0:#關鍵字
+        #     beers = beer.objects.exclude(time='停產').filter(SRM__gt=25)
+        #     KeyWordBeer(event,beers)
+        # elif ('不苦' in event.message.text) and beer.objects.exclude(time='停產').filter(IBU__lt=15).count()>0:#關鍵字
+        #     beers = beer.objects.exclude(time='停產').filter(IBU__lt=15)
+        #     KeyWordBeer(event,beers)
         elif ('得獎' in event.message.text) and len(event.message.text)<6:#關鍵字
             beers = beer.objects.exclude(AwardRecord='')
             KeyWordBeer(event,beers)
-        elif (event.message.text in ['隨便','青菜',]) and len(event.message.text)<6:#隨機
+        elif (event.message.text in ['隨便','青菜','盲飲']) and len(event.message.text)<6:#隨機
             beers = beer.objects.filter(cName=get_random())
             KeyWordBeer(event,beers)
         elif (event.message.text in ['台虎','臺虎','台啤','蔡氏','金色三麥','酉鬼','啤酒頭','吉姆老爹']):#黑名單:       
@@ -200,6 +199,10 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
                     i+=1
             else:
                 ibu='🌿🌿🌿🌿🌿'
+
+            feature_text = '特色:' + str(beer.Feature).replace('None', '')
+            description_text = '說明:' + str(beer.Description).replace('None', '')
+
             if len(bubbles)%10==0:
                 bubbles=[]
             bubbles.append(#酒單排版
@@ -231,8 +234,8 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
                                 ]
                             ),
                             TextComponent(text=AwardRecord, weight='bold', color='#666666', size='md', margin='md', wrap=True),
-                            TextComponent(text=str(beer.Feature).replace('None',' ')+' ', color='#666666', size='sm', margin='md', wrap=True),
-                            TextComponent(text=str(beer.Description).replace('None',' ')+' ', color='#666666', size='sm', margin='md', wrap=True),
+                            TextComponent(text=feature_text, color='#666666', size='sm', margin='md', wrap=True),
+                            TextComponent(text=description_text, color='#666666', size='sm', margin='md', wrap=True),
                             BoxComponent(
                                 layout='vertical',
                                 position='absolute',
