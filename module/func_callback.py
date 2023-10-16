@@ -102,21 +102,13 @@ def HappyHour(event): #快樂時光
         TextSendMessage(text='發生錯誤'))
 
 def reply_message_with_quick_reply(event):
-    items = [
-        QuickReplyButton(
-            action=MessageAction(label="不苦", text="不苦")
-        ),
-        QuickReplyButton(
-            action=MessageAction(label="水果", text="水果")
-        ),
-        QuickReplyButton(
-            action=MessageAction(label="黑", text="黑")
-        ),
-        QuickReplyButton(
-            action=MessageAction(label="全部", text="全部")
-        )
-    ]
-    quick_reply = QuickReply(items=items)
+    keywords = [abeer.Keyword for abeer in beer.objects.exclude(time='停產')]
+    allkeywords = []
+    for keyword in keywords:
+        allkeywords.extend(keyword.split(','))
+    unique_keywords = list(set(allkeywords))
+    unique_keywords.append("全部")
+    quick_reply = [QuickReplyButton(action=MessageAction(label=keyword, text=keyword)) for keyword in unique_keywords]
     message = TextSendMessage(text="你想喝哪一種酒?",quick_reply=quick_reply)
     line_bot_api.reply_message(event.reply_token,message)
 

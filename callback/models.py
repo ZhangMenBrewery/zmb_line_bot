@@ -18,7 +18,7 @@ class beer(models.Model):
     Adj = models.CharField(max_length=200, blank=True) #其他
     Feature = models.CharField(max_length=200) #特色
     Description = models.CharField(max_length=500, blank=True) #描述
-    Keyword = models.CharField(max_length=50, blank=True) #描述
+    Keyword = models.CharField(max_length=50, blank=True) #關鍵字
 
 class can(models.Model):
     time = models.CharField(max_length=10, null=False) #時間

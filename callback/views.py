@@ -10,6 +10,7 @@ from linebot.models import TextMessage, MessageEvent, TextSendMessage, StickerMe
 from module import func_callback
 import git
 import subprocess
+import requests
 
 line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN_LINEBOT)
 parser = WebhookParser(settings.LINE_CHANNEL_SECRET_LINEBOT)
@@ -25,6 +26,14 @@ def update_server(request):
             # subprocess.check_call(['pip', 'install', '-r', 'requirements.txt'], cwd=repo_path)
             subprocess.check_call(['python', 'manage.py', 'makemigrations'], cwd=repo_path)
             subprocess.check_call(['python', 'manage.py', 'migrate'], cwd=repo_path)
+
+            response = requests.get(
+                'https://www.pythonanywhere.com/api/v0/user/{username}/webapps/{domain_name}/reload/'.format(
+                    username=settings.PYTHONANYWHERE_USER, domain_name=settings.PYTHONANYWHERE_DOMAIN_NAME
+                ),
+                headers={'Authorization': 'Token {token}'.format(token=settings.PYTHONANYWHERE_API)}
+            )
+
             return JsonResponse({'message': 'Updated PythonAnywhere and migrated sucessfully'}, status=200)
         except git.GitCommandError as e:
             return JsonResponse({'error': 'GitCommandError: {}'.format(e.stderr)}, status=500)
