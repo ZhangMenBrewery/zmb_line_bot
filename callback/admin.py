@@ -12,7 +12,7 @@ class beerAdmin(admin.ModelAdmin):
             default=Value(0),
             output_field=IntegerField()
         ),
-        'id',
+        'TapNum',
     )
 
 class canAdmin(admin.ModelAdmin):
