@@ -124,10 +124,13 @@ def line_login(request):
         "scope": "profile openid email",
     }
     auth_url = requests.Request('GET', line_oauth_url, params=params).prepare().url
+    print('準備轉址')
+    print(auth_url)
     return redirect(auth_url)
 
 # 處理回調
 def line_callback(request):
+    print('轉址成功')
     code = request.GET.get('code')
     state = request.GET.get('state')
 
