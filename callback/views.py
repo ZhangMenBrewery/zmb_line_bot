@@ -28,12 +28,16 @@ def update_server(request):
             subprocess.check_call(['python', 'manage.py', 'makemigrations'], cwd=repo_path)
             subprocess.check_call(['python', 'manage.py', 'migrate'], cwd=repo_path)
 
-            response = requests.get(
+            response = requests.post(
                 'https://www.pythonanywhere.com/api/v0/user/{username}/webapps/{domain_name}/reload/'.format(
                     username=settings.PYTHONANYWHERE_USER, domain_name=settings.PYTHONANYWHERE_DOMAIN_NAME
                 ),
                 headers={'Authorization': 'Token {token}'.format(token=settings.PYTHONANYWHERE_API)}
             )
+            if response.status_code == 200:
+                print(f"Reload pythonanywhere web is sucessful. {response.content}")
+            else:
+                print(f"Reload pythonanywhere web is failed. {response.status_code} : {response.content}")
 
             return JsonResponse({'message': 'Updated PythonAnywhere and migrated sucessfully'}, status=200)
         except git.GitCommandError as e:
