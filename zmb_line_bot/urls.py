@@ -17,11 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 import callback.views
-import allauth.account.urls
+import allauth.account.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('callback/', include('callback.urls')),
     path('update_server/', callback.views.update_server, name='update_server'),
-    path('accounts/', allauth.account.urls),
+    path('accounts/', include('allauth.account.urls')),
 ]
