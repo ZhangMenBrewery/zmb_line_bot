@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'callback',
-    
+
     # The following apps are required:
     'allauth',
     'allauth.account',
@@ -105,7 +105,10 @@ TEMPLATES = [
                 # Already defined Django-related contexts here
 
                 # `allauth` needs this from django
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
