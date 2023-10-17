@@ -34,10 +34,10 @@ def update_server(request):
                 ),
                 headers={'Authorization': 'Token {token}'.format(token=settings.PYTHONANYWHERE_API)}
             )
-            if response.status_code == 200:
-                print(f"Reload pythonanywhere web is sucessful. {response.content}")
-            else:
-                print(f"Reload pythonanywhere web is failed. {response.status_code} : {response.content}")
+            # if response.status_code == 200:
+            #     print(f"Reload pythonanywhere web is sucessful. {response.content}")
+            # else:
+            #     print(f"Reload pythonanywhere web is failed. {response.status_code} : {response.content}")
 
             return JsonResponse({'message': 'Updated PythonAnywhere and migrated sucessfully'}, status=200)
         except git.GitCommandError as e:
