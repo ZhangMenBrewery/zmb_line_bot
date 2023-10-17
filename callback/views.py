@@ -109,6 +109,7 @@ def callback(request):
     
 # 開始認證流程
 def line_login(request):
+    print('開始登入')
     # LINE OAuth URL
     line_oauth_url = "https://access.line.me/oauth2/v2.1/authorize"
     params = {
