@@ -51,9 +51,6 @@ INSTALLED_APPS = [
     'callback',
     
     # The following apps are required:
-    'django.contrib.auth',
-    'django.contrib.messages',
-
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
