@@ -64,7 +64,7 @@ def callback(request):
                     if '訂位' in mtext:
                         func_callback.Reserver(event)
                     elif mtext == '登入':
-                        line_login()
+                        line_login(request)
                     # elif 'happy hour' in mtext.lower() or '快樂時光' in mtext:
                     #     func_callback.HappyHour(event)
                     elif mtext == '酒款介紹':
