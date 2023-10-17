@@ -120,7 +120,7 @@ def line_login(request):
         "response_type": "code",
         "client_id": settings.LINE_CHANNEL_ID,
         "redirect_uri": settings.LINE_CALLBACK_URL,
-        "state": "random_state",  # 您應該生成一個隨機狀態並儲存它以驗證回調
+        "state": "zhangmen54685508",  # 您應該生成一個隨機狀態並儲存它以驗證回調
         "scope": "profile openid email",
     }
     auth_url = requests.Request('GET', line_oauth_url, params=params).prepare().url
