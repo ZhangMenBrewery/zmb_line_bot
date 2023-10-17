@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbid
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.shortcuts import redirect
 
 from linebot import LineBotApi, WebhookParser
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
@@ -103,3 +104,54 @@ def callback(request):
         return HttpResponse()
     else:
         return HttpResponseBadRequest()
+    
+# 開始認證流程
+def line_login(request):
+    # LINE OAuth URL
+    line_oauth_url = "https://access.line.me/oauth2/v2.1/authorize"
+    params = {
+        "response_type": "code",
+        "client_id": settings.LINE_CHANNEL_ID,
+        "redirect_uri": settings.LINE_CALLBACK_URL,
+        "state": "random_state",  # 您應該生成一個隨機狀態並儲存它以驗證回調
+        "scope": "profile openid email",
+    }
+    auth_url = requests.Request('GET', line_oauth_url, params=params).prepare().url
+    return redirect(auth_url)
+
+# 處理回調
+def line_callback(request):
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+
+    # 驗證狀態
+    # ...
+
+    # 使用授權碼獲取訪問令牌
+    token_url = "https://api.line.me/oauth2/v2.1/token"
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    data = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": settings.LINE_CALLBACK_URL,
+        "client_id": settings.LINE_CHANNEL_ID,
+        "client_secret": settings.LINE_CHANNEL_SECRET,
+    }
+    response = requests.post(token_url, headers=headers, data=data)
+    token_data = response.json()
+
+    # 使用訪問令牌獲取用戶資料
+    profile_url = "https://api.line.me/v2/profile"
+    headers = {
+        "Authorization": f"Bearer {token_data['access_token']}"
+    }
+    profile_response = requests.get(profile_url, headers=headers)
+    profile_data = profile_response.json()
+
+    print(profile_data)
+    # 在此處處理用戶資料，例如保存到資料庫或登入用戶
+    # ...
+
+    return JsonResponse(profile_data)
