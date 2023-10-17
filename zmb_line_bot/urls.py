@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('callback/', include('callback.urls')),
     path('update_server/', callback.views.update_server, name='update_server'),
+    path('accounts/', include('allauth.urls')),
 ]
