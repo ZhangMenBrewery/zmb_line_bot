@@ -182,7 +182,7 @@ def KeyWordBeer(event, beers): #關鍵字酒單生產
         if event.type == 'message':
             beerpage = 0
         elif event.type == 'postback':
-            beerpage = int(event.postback.data[4:7]) #目前頁數
+            beerpage = int(event.postback.data[len('KeyWordBeer'):]) #目前頁數
         bubbles = []
 
         if beerpage != totalPage:
@@ -299,7 +299,7 @@ def KeyWordBeer(event, beers): #關鍵字酒單生產
                     footer=BoxComponent(
                         layout='vertical',
                         contents=[
-                            ButtonComponent(style='primary', height='sm', action=PostbackAction(label='下一頁', data='Beer' + '%03d' % (beerpage + 1))),
+                            ButtonComponent(style='primary', height='sm', action=PostbackAction(label='下一頁', data='KeyWordBeer' + '%03d' % (beerpage + 1))),
                             TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888', size='sm', align='center'),
                         ]
                     )
@@ -506,7 +506,7 @@ def IntrBeerMenuFlex(event): #說明酒款
         if event.type=='message':
             beerpage=0
         elif event.type=='postback':
-            beerpage = int(event.postback.data[4:7])#目前頁數
+            beerpage = int(event.postback.data[len('IntrBeer'):])#目前頁數
         bubbles = []
 
         if beerpage!=totalPage:
@@ -616,7 +616,7 @@ def IntrBeerMenuFlex(event): #說明酒款
                     footer=BoxComponent(
                         layout='vertical',
                         contents=[
-                            ButtonComponent(style='primary', height='sm',action=PostbackAction(label='下一頁',data='Beer'+'%03d'%(beerpage+1))),
+                            ButtonComponent(style='primary', height='sm',action=PostbackAction(label='下一頁',data='IntrBeer'+'%03d'%(beerpage+1))),
                             TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
                         ]
                     )

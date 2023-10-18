@@ -85,8 +85,10 @@ def callback(request):
             elif isinstance(event, PostbackEvent):
                 if len(event.postback.data)>7:
                     func_callback.IntrBeerMenuFlex(event)
-                elif event.postback.data[0:4]=="Beer":
+                elif event.postback.startswith("IntrBeer"):
                     func_callback.IntrBeerMenuFlex(event)
+                elif event.postback.startswith("KeyWordBeer"):
+                    func_callback.KeyWordBeer(event)
 
             elif isinstance(event, FollowEvent):
                 #func_callback.WelcomeText(event)
