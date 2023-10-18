@@ -87,12 +87,12 @@ def callback(request):
                     SendSticker(event)
 
             elif isinstance(event, PostbackEvent):
-                if len(event.postback.data)>7:
-                    IntrBeerMenuFlex(event)
-                elif event.postback.startswith("ITB"):
+                # if len(event.postback.data)>7:
+                #     IntrBeerMenuFlex(event)
+                if event.postback.startswith("ITB"):
                     IntrBeerMenuFlex(event)
                 elif event.postback.startswith("KWB"):
-                    KeyWordBeer(event, event.postback.data.split(':')[2])
+                    KeyWordBeer(event)
 
             elif isinstance(event, FollowEvent):
                 #WelcomeText(event)
@@ -282,8 +282,8 @@ def Other(event): #一般訊息
         if len(event.message.text)>1 and beer.objects.filter(cName__icontains=event.message.text).count()>0:#單一酒款
             IntrTheBeer(event)
         elif event.message.text!=',' and len(event.message.text)<6 and beer.objects.filter(Keyword__icontains=event.message.text).count()>0:#關鍵字
-            beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=event.message.text)
-            KeyWordBeer(event,beers)
+            # beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=event.message.text)
+            KeyWordBeer(event)
         # elif ('黑' in event.message.text) and beer.objects.exclude(time='停產').filter(SRM__gt=25).count()>0:#關鍵字
         #     beers = beer.objects.exclude(time='停產').filter(SRM__gt=25)
         #     KeyWordBeer(event,beers)
@@ -291,11 +291,11 @@ def Other(event): #一般訊息
         #     beers = beer.objects.exclude(time='停產').filter(IBU__lt=15)
         #     KeyWordBeer(event,beers)
         elif ('得獎' in event.message.text) and len(event.message.text)<6:#關鍵字
-            beers = beer.objects.exclude(AwardRecord='').exclude(time='停產')
-            KeyWordBeer(event,beers)
+            # beers = beer.objects.exclude(AwardRecord='').exclude(time='停產')
+            KeyWordBeer(event)
         elif (event.message.text in ['隨便','青菜','盲飲']) and len(event.message.text)<6:#隨機
-            beers = beer.objects.filter(cName=get_random())
-            KeyWordBeer(event,beers)
+            # beers = beer.objects.filter(cName=get_random())
+            KeyWordBeer(event)
         elif (event.message.text in ['台虎','臺虎','台啤','蔡氏','金色三麥','酉鬼','啤酒頭','吉姆老爹']):#黑名單:       
             message = [
                 TextSendMessage(text='這裡是『掌門精釀啤酒』，你喝醉了嗎?'),
@@ -331,8 +331,14 @@ def get_random():
         if Beer:
             return Beer
 
-def KeyWordBeer(event, beers): #關鍵字酒單生產
+def KeyWordBeer(event): #關鍵字酒單生產
     try:
+        if event.message.text!=',' and len(event.message.text)<6 and beer.objects.filter(Keyword__icontains=event.message.text).count()>0:#關鍵字)
+            beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=event.message.text)
+        elif ('得獎' in event.message.text) and len(event.message.text)<6:#關鍵字
+            beers = beer.objects.exclude(AwardRecord='').exclude(time='停產')
+        elif (event.message.text in ['隨便','青菜','盲飲']) and len(event.message.text)<6:#隨機
+            beers = beer.objects.filter(cName=get_random())
         beerNum = len(beers) #啤酒數量
         totalPage = int((beerNum)/9) #酒單頁數
         if event.type == 'message':
