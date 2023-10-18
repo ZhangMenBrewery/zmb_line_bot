@@ -89,9 +89,9 @@ def callback(request):
             elif isinstance(event, PostbackEvent):
                 # if len(event.postback.data)>7:
                 #     IntrBeerMenuFlex(event)
-                if event.postback.startswith("ITB"):
+                if event.postback.split(":")[0] == "ITB":
                     IntrBeerMenuFlex(event)
-                elif event.postback.startswith("KWB"):
+                elif event.postback.split(":")[0] == "KWB":
                     KeyWordBeer(event)
 
             elif isinstance(event, FollowEvent):
