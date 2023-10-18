@@ -175,36 +175,51 @@ def get_random():
         if Beer:
             return Beer
 
-def KeyWordBeer(event,beers): #關鍵字酒單生產
+def KeyWordBeer(event, beers): #關鍵字酒單生產
     try:
-        bubbles=[]
-        for beer in beers:
-            if beer.AwardRecord=='' or beer.AwardRecord==None:#得獎資訊處理
-                AwardRecord=' '
-            else:
-                AwardRecord="🏆"+beer.AwardRecord.replace('\n','\n🏆')
-            abv=''
-            if int(beer.ABV)<10:#酒精強度
-                i=0
-                while i < (int(beer.ABV)/2):
-                    abv+='🍺'
-                    i+=1
-            else:
-                abv='🍺🍺🍺🍺🍺'
-            ibu=''
-            if int(beer.IBU)<60:#苦度
-                i=0
-                while i < (int(beer.IBU)/12):
-                    ibu+='🌿'
-                    i+=1
-            else:
-                ibu='🌿🌿🌿🌿🌿'
+        beerNum = len(beers) #啤酒數量
+        totalPage = int((beerNum)/9) #酒單頁數
+        if event.type == 'message':
+            beerpage = 0
+        elif event.type == 'postback':
+            beerpage = int(event.postback.data[4:7]) #目前頁數
+        bubbles = []
 
-            feature_text = '特色:' + str(beer.Feature).replace('None', '')
-            description_text = '說明:' + str(beer.Description).replace('None', '')
+        if beerpage != totalPage:
+            rempage = 9
+        else:
+            rempage = beerNum % 9
 
-            if len(bubbles)%10==0:
-                bubbles=[]
+        for a in range(rempage):
+            b = beerpage * 9 + a
+            # ... (原有的BubbleContainer建立邏輯)
+
+            if beers[b].AwardRecord == '' or beers[b].AwardRecord == None: #得獎資訊處理
+                AwardRecord = ' '
+            else:
+                AwardRecord = "🏆" + beers[b].AwardRecord.replace('\n', '\n🏆')
+
+            abv = ''
+            if int(beers[b].ABV) < 10: #酒精強度
+                i = 0
+                while i < (int(beers[b].ABV) / 2):
+                    abv += '🍺'
+                    i += 1
+            else:
+                abv = '🍺🍺🍺🍺🍺'
+
+            ibu = ''
+            if int(beers[b].IBU) < 60: #苦度
+                i = 0
+                while i < (int(beers[b].IBU) / 12):
+                    ibu += '🌿'
+                    i += 1
+            else:
+                ibu = '🌿🌿🌿🌿🌿'
+
+            feature_text = '特色:' + str(beers[b].Feature).replace('None', '')
+            description_text = '說明:' + str(beers[b].Description).replace('None', '')
+
             bubbles.append(#酒單排版
                 BubbleContainer(
                     direction='ltr',
@@ -212,9 +227,9 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
                         layout='vertical',
                         spacing='sm',
                         contents=[
-                            TextComponent(text=str(beer.cName).replace('None',' ')+' ', weight='bold', size='xl'),
-                            TextComponent(text=str(beer.eName).replace('None',' ')+' ', weight='bold', size='xl'),
-                            TextComponent(text=str(beer.Style).replace('None',' ')+' ', size='md', margin='sm'),
+                            TextComponent(text=str(beers[b].cName).replace('None',' ')+' ', weight='bold', size='xl'),
+                            TextComponent(text=str(beers[b].eName).replace('None',' ')+' ', weight='bold', size='xl'),
+                            TextComponent(text=str(beers[b].Style).replace('None',' ')+' ', size='md', margin='sm'),
                             BoxComponent(
                                 layout='baseline',
                                 margin='md',
@@ -228,9 +243,9 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
                                 layout='baseline',
                                 margin='md',
                                 contents=[
-                                    TextComponent(text='ABV : '+str(beer.ABV)+'%', size='sm',flex=1),
-                                    TextComponent(text='IBU : '+str(beer.IBU), size='sm',flex=1),
-                                    TextComponent(text='SRM : '+str(beer.SRM), size='sm',flex=1),
+                                    TextComponent(text='ABV : '+str(beers[b].ABV)+'%', size='sm',flex=1),
+                                    TextComponent(text='IBU : '+str(beers[b].IBU), size='sm',flex=1),
+                                    TextComponent(text='SRM : '+str(beers[b].SRM), size='sm',flex=1),
                                 ]
                             ),
                             TextComponent(text=AwardRecord, weight='bold', color='#666666', size='md', margin='md', wrap=True),
@@ -246,7 +261,7 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
                                 offset_top='15px',
                                 offset_end='15px',
                                 contents=[
-                                    TextComponent(text=str(beer.time).replace('None','停產'),size='md',color='#ffffff',align='center',offset_top='5px'),
+                                    TextComponent(text=str(beers[b].time).replace('None','停產'),size='md',color='#ffffff',align='center',offset_top='5px'),
                                 ]
                             ),    
                         ]
@@ -259,14 +274,139 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
                     )
                 )
             )
-            if len(bubbles)%10==0:
-                message = FlexSendMessage(alt_text='讓我來跟你說說有什麼啤酒。',contents=CarouselContainer(contents=bubbles))
-                line_bot_api.reply_message(event.reply_token,message)
-        message = FlexSendMessage(alt_text='讓我來跟你說說有什麼啤酒。',contents=CarouselContainer(contents=bubbles))
-        line_bot_api.reply_message(event.reply_token,message)
+
+            if len(bubbles) % 10 == 0:
+                message = FlexSendMessage(alt_text='讓我來跟你說說有什麼啤酒。', contents=CarouselContainer(contents=bubbles))
+                line_bot_api.reply_message(event.reply_token, message)
+                bubbles = []
+
+        if beerpage != totalPage: #下一頁選單
+            bubbles.append(
+                BubbleContainer(
+                    body=BoxComponent(
+                        layout='vertical',
+                        contents=[
+                            ImageComponent(
+                                url='https://i.imgur.com/9yMH9rm.jpeg',
+                                size='full',
+                                aspect_ratio='1:1',
+                                aspect_mode='cover',
+                                gravity='top',
+                            ),
+                        ],
+                    padding_all='0px',
+                    ),
+                    footer=BoxComponent(
+                        layout='vertical',
+                        contents=[
+                            ButtonComponent(style='primary', height='sm', action=PostbackAction(label='下一頁', data='Beer' + '%03d' % (beerpage + 1))),
+                            TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888', size='sm', align='center'),
+                        ]
+                    )
+                )
+            )
+
+        if bubbles: # 如果還有剩餘的bubbles
+            message = FlexSendMessage(alt_text='讓我來跟你說說有什麼啤酒。', contents=CarouselContainer(contents=bubbles))
+            line_bot_api.reply_message(event.reply_token, message)
+
     except:
         line_bot_api.reply_message(event.reply_token,
         TextSendMessage(text='維護中，稍後再試。'))
+
+
+# def KeyWordBeer(event,beers): #關鍵字酒單生產
+#     try:
+#         bubbles=[]
+#         for beer in beers:
+#             if beer.AwardRecord=='' or beer.AwardRecord==None:#得獎資訊處理
+#                 AwardRecord=' '
+#             else:
+#                 AwardRecord="🏆"+beer.AwardRecord.replace('\n','\n🏆')
+#             abv=''
+#             if int(beer.ABV)<10:#酒精強度
+#                 i=0
+#                 while i < (int(beer.ABV)/2):
+#                     abv+='🍺'
+#                     i+=1
+#             else:
+#                 abv='🍺🍺🍺🍺🍺'
+#             ibu=''
+#             if int(beer.IBU)<60:#苦度
+#                 i=0
+#                 while i < (int(beer.IBU)/12):
+#                     ibu+='🌿'
+#                     i+=1
+#             else:
+#                 ibu='🌿🌿🌿🌿🌿'
+
+#             feature_text = '特色:' + str(beer.Feature).replace('None', '')
+#             description_text = '說明:' + str(beer.Description).replace('None', '')
+
+#             if len(bubbles)%10==0:
+#                 bubbles=[]
+#             bubbles.append(#酒單排版
+#                 BubbleContainer(
+#                     direction='ltr',
+#                     body=BoxComponent(
+#                         layout='vertical',
+#                         spacing='sm',
+#                         contents=[
+#                             TextComponent(text=str(beer.cName).replace('None',' ')+' ', weight='bold', size='xl'),
+#                             TextComponent(text=str(beer.eName).replace('None',' ')+' ', weight='bold', size='xl'),
+#                             TextComponent(text=str(beer.Style).replace('None',' ')+' ', size='md', margin='sm'),
+#                             BoxComponent(
+#                                 layout='baseline',
+#                                 margin='md',
+#                                 contents=[
+#                                     TextComponent(text='酒精'+str(abv),size='sm',color='#999999',flex=1),
+#                                     TextComponent(text='苦度'+str(ibu),size='sm',color='#999999',flex=1),
+#                                 ]
+#                             ),
+#                             SeparatorComponent(color='#0000FF'),
+#                             BoxComponent(
+#                                 layout='baseline',
+#                                 margin='md',
+#                                 contents=[
+#                                     TextComponent(text='ABV : '+str(beer.ABV)+'%', size='sm',flex=1),
+#                                     TextComponent(text='IBU : '+str(beer.IBU), size='sm',flex=1),
+#                                     TextComponent(text='SRM : '+str(beer.SRM), size='sm',flex=1),
+#                                 ]
+#                             ),
+#                             TextComponent(text=AwardRecord, weight='bold', color='#666666', size='md', margin='md', wrap=True),
+#                             TextComponent(text=feature_text, color='#666666', size='sm', margin='md', wrap=True),
+#                             TextComponent(text=description_text, color='#666666', size='sm', margin='md', wrap=True),
+#                             BoxComponent(
+#                                 layout='vertical',
+#                                 position='absolute',
+#                                 width='80px',
+#                                 height='30px',
+#                                 background_color='#ff334b',
+#                                 corner_radius='20px',
+#                                 offset_top='15px',
+#                                 offset_end='15px',
+#                                 contents=[
+#                                     TextComponent(text=str(beer.time).replace('None','停產'),size='md',color='#ffffff',align='center',offset_top='5px'),
+#                                 ]
+#                             ),    
+#                         ]
+#                     ),
+#                     footer=BoxComponent(
+#                         layout='vertical',
+#                         contents=[
+#                             TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
+#                         ]
+#                     )
+#                 )
+#             )
+#             if len(bubbles)%10==0:
+#                 message = FlexSendMessage(alt_text='讓我來跟你說說有什麼啤酒。',contents=CarouselContainer(contents=bubbles))
+#                 line_bot_api.reply_message(event.reply_token,message)
+#         message = FlexSendMessage(alt_text='讓我來跟你說說有什麼啤酒。',contents=CarouselContainer(contents=bubbles))
+#         line_bot_api.reply_message(event.reply_token,message)
+#     except:
+#         line_bot_api.reply_message(event.reply_token,
+#         TextSendMessage(text='維護中，稍後再試。'))
 
 def IntrTheBeer(event): #說明單一酒款
     try:
