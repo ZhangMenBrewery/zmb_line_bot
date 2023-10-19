@@ -314,24 +314,24 @@ def KeyWordBeer(event): #關鍵字酒單生產
         print(mtext)
         if mtext!=',' and len(mtext)<6 and beer.objects.filter(Keyword__icontains=mtext).count()>0:#關鍵字)
             beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=mtext)
-        elif ('得獎' in mtext) and len(mtext)<6:#關鍵字
-            beers = beer.objects.exclude(AwardRecord='').exclude(time='停產')
+        elif mtext == '得獎':#關鍵字
+            beers = beer.objects.exclude(AwardRecord='')
 
         beerNum = len(beers) #啤酒數量
         totalPage = int((beerNum)/9) #酒單頁數
         if event.type == 'message':
-            beerpage = 0
+            currentpage = 0
         elif event.type == 'postback':
-            beerpage = int(event.postback.data.split(':')[1]) #目前頁數
+            currentpage = int(event.postback.data.split(':')[1]) #目前頁數
         bubbles = []
 
-        if beerpage != totalPage:
+        if currentpage != totalPage:
             rempage = 9
         else:
             rempage = beerNum % 9
 
         for a in range(rempage):
-            b = beerpage * 9 + a
+            b = currentpage * 9 + a
             # ... (原有的BubbleContainer建立邏輯)
 
             if beers[b].AwardRecord == '' or beers[b].AwardRecord == None: #得獎資訊處理
@@ -415,7 +415,7 @@ def KeyWordBeer(event): #關鍵字酒單生產
                 )
             )
 
-        if beerpage != totalPage: #下一頁選單
+        if currentpage != totalPage: #下一頁選單
             bubbles.append(
                 BubbleContainer(
                     body=BoxComponent(
@@ -435,16 +435,16 @@ def KeyWordBeer(event): #關鍵字酒單生產
                         layout='vertical',
                         contents=[
                             ButtonComponent(style='primary', height='sm', action=PostbackAction(label='下一頁',\
-                                            data=f"KWB:{beerpage + 1}%02d:{beers}")),
+                                            data=f"KWB:{currentpage + 1}%02d:{beers}")),
                             TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888', size='sm', align='center'),
                         ]
                     )
                 )
             )
 
-        if bubbles: # 如果還有剩餘的bubbles
-            message = FlexSendMessage(alt_text='讓我來跟你說說有什麼啤酒。', contents=CarouselContainer(contents=bubbles))
-            line_bot_api.reply_message(event.reply_token, message)
+        carousel = CarouselContainer(contents=bubbles)
+        message = FlexSendMessage(alt_text='讓我來跟你說說有什麼啤酒。', contents=carousel)
+        line_bot_api.reply_message(event.reply_token, message)
 
     except:
         line_bot_api.reply_message(event.reply_token,
@@ -550,18 +550,18 @@ def IntrBeerMenuFlex(event): #說明酒款
         beerNum = beers.count()#啤酒數量
         totalPage = int((beerNum)/9)#酒單頁數
         if event.type=='message':
-            beerpage=0
+            currentpage=0
         elif event.type=='postback':
-            beerpage = int(event.postback.data.split(':')[1])#目前頁數
+            currentpage = int(event.postback.data.split(':')[1])#目前頁數
         bubbles = []
 
-        if beerpage!=totalPage:
+        if currentpage!=totalPage:
             rempage=9
         else:
             rempage=beerNum%9
 
         for a in range(rempage):
-            b = beerpage*9+a
+            b = currentpage*9+a
             if beers[b].AwardRecord=='' or beers[b].AwardRecord==None:#得獎資訊處理
                 AwardRecord=' '
             else:
@@ -643,7 +643,7 @@ def IntrBeerMenuFlex(event): #說明酒款
                 )
             )
 
-        if beerpage!=totalPage:#下一頁選單
+        if currentpage!=totalPage:#下一頁選單
             bubbles.append(
                 BubbleContainer(
                     body=BoxComponent(
@@ -663,7 +663,7 @@ def IntrBeerMenuFlex(event): #說明酒款
                         layout='vertical',
                         contents=[
                             ButtonComponent(style='primary', height='sm',action=PostbackAction(label='下一頁',\
-                                            data=f"ITB:{beerpage+1}%02d")),
+                                            data=f"ITB:{currentpage+1}%02d")),
                             TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
                         ]
                     )
