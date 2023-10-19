@@ -415,11 +415,6 @@ def KeyWordBeer(event): #關鍵字酒單生產
                 )
             )
 
-            if len(bubbles) % 10 == 0:
-                message = FlexSendMessage(alt_text='讓我來跟你說說有什麼啤酒。', contents=CarouselContainer(contents=bubbles))
-                line_bot_api.reply_message(event.reply_token, message)
-                bubbles = []
-
         if beerpage != totalPage: #下一頁選單
             bubbles.append(
                 BubbleContainer(
