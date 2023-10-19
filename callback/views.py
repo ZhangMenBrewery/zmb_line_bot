@@ -132,7 +132,7 @@ def callback(request): #收到訊息
                             IntrBeerMenuFlex(event)
                         elif (len(mtext)>1 and beer.objects.filter(cName__icontains=mtext).count()>0) or mtext=='盲飲':#單一酒款
                             IntrTheBeer(event)
-                        elif (mtext!=',' and len(mtext)<6 and beer.objects.exclude(time='停產').filter(Keyword__icontains=mtext).count()>0) or mtext=='得獎':#關鍵字
+                        elif (mtext!=',' and len(mtext)<6 and beer.objects.filter(Keyword__icontains=mtext).count()>0) or mtext=='得獎':#關鍵字
                             KeyWordBeer(event)
                         elif (mtext in ['台虎','臺虎','台啤','蔡氏','金色三麥','酉鬼','啤酒頭','吉姆老爹']):#黑名單:       
                             message = [
@@ -309,9 +309,9 @@ def KeyWordBeer(event): #關鍵字酒單生產
     try:
         mtext = event.message.text
         if mtext!=',' and len(mtext)<6 and beer.objects.filter(Keyword__icontains=mtext).count()>0:#關鍵字)
-            beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=mtext)
+            beers = beer.objects.filter(Keyword__icontains=mtext)
         elif ('得獎' in mtext) and len(mtext)<6:#關鍵字
-            beers = beer.objects.exclude(AwardRecord='').exclude(time='停產')
+            beers = beer.objects.exclude(AwardRecord='')
 
         beerNum = len(beers) #啤酒數量
         totalPage = int((beerNum)/9) #酒單頁數
