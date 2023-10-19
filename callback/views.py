@@ -51,9 +51,6 @@ def update_server(request):
     else:
         return JsonResponse({'error': 'Wrong event type'}, status=400)
     
-@csrf_exempt
-# Create your views here.
-   
 # 開始認證流程
 def line_login(request):
     print('開始登入')
@@ -109,6 +106,7 @@ def line_callback(request):
 
     return JsonResponse(profile_data)
 
+@csrf_exempt
 def callback(request): #收到訊息
     if request.method == 'POST':
         signature = request.META['HTTP_X_LINE_SIGNATURE']
