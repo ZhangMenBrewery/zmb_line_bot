@@ -129,10 +129,13 @@ def callback(request): #收到訊息
                         elif mtext == '酒款介紹':#產生quickreply buttom
                             reply_message_with_quick_reply(event)
                         elif mtext == '全部': 
+                            print('IntrBeerMenuFlex')
                             IntrBeerMenuFlex(event)
                         elif (len(mtext)>1 and beer.objects.filter(cName__icontains=mtext).count()>0) or mtext=='盲飲':#單一酒款
+                            print('IntrTheBeer')
                             IntrTheBeer(event)
-                        elif (mtext!=',' and len(mtext)<6 and beer.objects.filter(Keyword__icontains=mtext).count()>0) or mtext=='得獎':#關鍵字
+                        elif (mtext!=',' and len(mtext)<6 and beer.objects.exclude(time='停產').filter(Keyword__icontains=mtext).count()>0) or mtext=='得獎':#關鍵字
+                            print('KeyWordBeer')
                             KeyWordBeer(event)
                         elif (mtext in ['台虎','臺虎','台啤','蔡氏','金色三麥','酉鬼','啤酒頭','吉姆老爹']):#黑名單:       
                             message = [
@@ -308,10 +311,11 @@ def get_random(): #隨機酒款
 def KeyWordBeer(event): #關鍵字酒單生產
     try:
         mtext = event.message.text
+        print(mtext)
         if mtext!=',' and len(mtext)<6 and beer.objects.filter(Keyword__icontains=mtext).count()>0:#關鍵字)
-            beers = beer.objects.filter(Keyword__icontains=mtext)
+            beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=mtext)
         elif ('得獎' in mtext) and len(mtext)<6:#關鍵字
-            beers = beer.objects.exclude(AwardRecord='')
+            beers = beer.objects.exclude(AwardRecord='').exclude(time='停產')
 
         beerNum = len(beers) #啤酒數量
         totalPage = int((beerNum)/9) #酒單頁數
