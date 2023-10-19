@@ -53,70 +53,7 @@ def update_server(request):
     
 @csrf_exempt
 # Create your views here.
-def callback(request):
-    if request.method == 'POST':
-        signature = request.META['HTTP_X_LINE_SIGNATURE']
-        body = request.body.decode('utf-8')
-
-        try:
-            events = parser.parse(body, signature)
-        except InvalidSignatureError:
-            return HttpResponseForbidden()
-        except LineBotApiError:
-            return HttpResponseBadRequest()
-        
-        for event in events:
-            if isinstance(event, MessageEvent):
-                if isinstance(event.message, TextMessage):
-                    mtext = event.message.text
-                    if '訂位' in mtext:
-                        Reserver(event)
-                    elif mtext == '登入':
-                        line_login(request)
-                    # elif 'happy hour' in mtext.lower() or '快樂時光' in mtext:
-                    #     HappyHour(event)
-                    elif mtext == '酒款介紹':
-                        reply_message_with_quick_reply(event)
-                    elif mtext == '全部': 
-                        IntrBeerMenuFlex(event)
-                    elif '鋁罐' in mtext or '鋁罐介紹' in mtext: 
-                        IntrCanMenuFlex(event)
-                    else: #關鍵字
-                        Other(event)
-                elif isinstance(event.message, StickerMessage):
-                    SendSticker(event)
-
-            elif isinstance(event, PostbackEvent):
-                # if len(event.postback.data)>7:
-                #     IntrBeerMenuFlex(event)
-                if event.postback.split(":")[0] == "ITB":
-                    IntrBeerMenuFlex(event)
-                elif event.postback.split(":")[0] == "KWB":
-                    KeyWordBeer(event)
-
-            elif isinstance(event, FollowEvent):
-                #WelcomeText(event)
-                print('加入好友')
-
-            elif isinstance(event, UnfollowEvent):
-                print('取消好友')
-
-            elif isinstance(event, JoinEvent):
-                print('進入群組')
-
-            elif isinstance(event, LeaveEvent):
-                print('離開群組')
-
-            elif isinstance(event, MemberJoinedEvent):
-                print('有人入群')
-
-            elif isinstance(event, MemberLeftEvent):
-                print('有人退群')
-        
-        return HttpResponse()
-    else:
-        return HttpResponseBadRequest()
-    
+   
 # 開始認證流程
 def line_login(request):
     print('開始登入')
@@ -171,6 +108,91 @@ def line_callback(request):
     # ...
 
     return JsonResponse(profile_data)
+
+def callback(request): #收到訊息
+    if request.method == 'POST':
+        signature = request.META['HTTP_X_LINE_SIGNATURE']
+        body = request.body.decode('utf-8')
+
+        try:
+            events = parser.parse(body, signature)
+        except InvalidSignatureError:
+            return HttpResponseForbidden()
+        except LineBotApiError:
+            return HttpResponseBadRequest()
+        
+        for event in events:
+            if isinstance(event, MessageEvent):
+                if isinstance(event.message, TextMessage): #處理文字訊息
+                    try:
+                        mtext = event.message.text
+                        if '訂位' in mtext:
+                            Reserver(event)
+                        elif mtext == '酒款介紹':#產生quickreply buttom
+                            reply_message_with_quick_reply(event)
+                        elif mtext == '全部': 
+                            IntrBeerMenuFlex(event)
+                        elif (len(mtext)>1 and beer.objects.filter(cName__icontains=mtext).count()>0) or mtext=='盲飲':#單一酒款
+                            IntrTheBeer(event)
+                        elif (mtext!=',' and len(mtext)<6 and beer.objects.exclude(time='停產').filter(Keyword__icontains=mtext).count()>0) or mtext=='得獎':#關鍵字
+                            KeyWordBeer(event)
+                        elif (mtext in ['台虎','臺虎','台啤','蔡氏','金色三麥','酉鬼','啤酒頭','吉姆老爹']):#黑名單:       
+                            message = [
+                                TextSendMessage(text='這裡是『掌門精釀啤酒』，你喝醉了嗎?'),
+                                StickerSendMessage( #圖片
+                                package_id='11537',
+                                sticker_id='52002773'
+                                )
+                            ]
+                            line_bot_api.reply_message(event.reply_token,message)
+                        elif ('掌門' in mtext):#關鍵字:       
+                            message = [
+                                TextSendMessage(text='掌門愛你唷。'),
+                                StickerSendMessage( #圖片
+                                package_id='11537',
+                                sticker_id='52002742'
+                                )
+                            ]
+                            line_bot_api.reply_message(event.reply_token,message)
+                        else:       
+                            message = [
+                                TextSendMessage(text='感謝您的留言，專員看到後將會回覆您\n謝謝您的耐心等候，並祝您一切順心。'),
+                            ]
+                            line_bot_api.reply_message(event.reply_token,message)
+                    except:
+                        line_bot_api.reply_message(event.reply_token, TextSendMessage(text='維護中，稍後再試。'))
+                        
+                elif isinstance(event.message, StickerMessage):
+                    SendSticker(event)
+
+            elif isinstance(event, PostbackEvent):
+                if event.postback.data.split(":")[0] == "ITB":
+                    IntrBeerMenuFlex(event)
+                elif event.postback.data.split(":")[0] == "KWB":
+                    KeyWordBeer(event)
+
+            elif isinstance(event, FollowEvent):
+                #WelcomeText(event)
+                print('加入好友')
+
+            elif isinstance(event, UnfollowEvent):
+                print('取消好友')
+
+            elif isinstance(event, JoinEvent):
+                print('進入群組')
+
+            elif isinstance(event, LeaveEvent):
+                print('離開群組')
+
+            elif isinstance(event, MemberJoinedEvent):
+                print('有人入群')
+
+            elif isinstance(event, MemberLeftEvent):
+                print('有人退群')
+        
+        return HttpResponse()
+    else:
+        return HttpResponseBadRequest()
 
 def WelcomeText(event): #歡迎文字
     try:       
@@ -257,7 +279,7 @@ def HappyHour(event): #快樂時光
         line_bot_api.reply_message(event.reply_token,
         TextSendMessage(text='發生錯誤'))
 
-def reply_message_with_quick_reply(event):
+def reply_message_with_quick_reply(event): #回覆按鈕
     keywords = [abeer.Keyword for abeer in beer.objects.exclude(time='停產')]
     allkeywords = []
     for keyword in keywords:
@@ -277,53 +299,7 @@ def reply_message_with_quick_reply(event):
     message = TextSendMessage(text="您好，請直接輸入酒款名稱做查詢，或選取下面關鍵字給您相關酒款介紹，謝謝。", quick_reply=quick_reply)
     line_bot_api.reply_message(event.reply_token, message)
 
-def Other(event): #一般訊息
-    try:
-        if len(event.message.text)>1 and beer.objects.filter(cName__icontains=event.message.text).count()>0:#單一酒款
-            IntrTheBeer(event)
-        elif event.message.text!=',' and len(event.message.text)<6 and beer.objects.filter(Keyword__icontains=event.message.text).count()>0:#關鍵字
-            # beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=event.message.text)
-            KeyWordBeer(event)
-        # elif ('黑' in event.message.text) and beer.objects.exclude(time='停產').filter(SRM__gt=25).count()>0:#關鍵字
-        #     beers = beer.objects.exclude(time='停產').filter(SRM__gt=25)
-        #     KeyWordBeer(event,beers)
-        # elif ('不苦' in event.message.text) and beer.objects.exclude(time='停產').filter(IBU__lt=15).count()>0:#關鍵字
-        #     beers = beer.objects.exclude(time='停產').filter(IBU__lt=15)
-        #     KeyWordBeer(event,beers)
-        elif ('得獎' in event.message.text) and len(event.message.text)<6:#關鍵字
-            # beers = beer.objects.exclude(AwardRecord='').exclude(time='停產')
-            KeyWordBeer(event)
-        elif (event.message.text in ['隨便','青菜','盲飲']) and len(event.message.text)<6:#隨機
-            # beers = beer.objects.filter(cName=get_random())
-            KeyWordBeer(event)
-        elif (event.message.text in ['台虎','臺虎','台啤','蔡氏','金色三麥','酉鬼','啤酒頭','吉姆老爹']):#黑名單:       
-            message = [
-                TextSendMessage(text='這裡是『掌門精釀啤酒』，你喝醉了嗎?'),
-                StickerSendMessage( #圖片
-                package_id='11537',
-                sticker_id='52002773'
-                )
-            ]
-            line_bot_api.reply_message(event.reply_token,message)
-        elif ('掌門' in event.message.text):#關鍵字:       
-            message = [
-                TextSendMessage(text='掌門愛你唷。'),
-                StickerSendMessage( #圖片
-                package_id='11537',
-                sticker_id='52002742'
-                )
-            ]
-            line_bot_api.reply_message(event.reply_token,message)
-        else:       
-            message = [
-                TextSendMessage(text='感謝您的留言，專員看到後將會回覆您\n謝謝您的耐心等候，並祝您一切順心。'),
-            ]
-            line_bot_api.reply_message(event.reply_token,message)
-    except:
-        line_bot_api.reply_message(event.reply_token,
-        TextSendMessage(text='維護中，稍後再試。'))
-
-def get_random():
+def get_random(): #隨機酒款
     max_id = beer.objects.all().aggregate(max_id=Max("id"))['max_id']
     while True:
         pk = random.randint(1, max_id)
@@ -333,12 +309,12 @@ def get_random():
 
 def KeyWordBeer(event): #關鍵字酒單生產
     try:
-        if event.message.text!=',' and len(event.message.text)<6 and beer.objects.filter(Keyword__icontains=event.message.text).count()>0:#關鍵字)
-            beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=event.message.text)
-        elif ('得獎' in event.message.text) and len(event.message.text)<6:#關鍵字
+        mtext = event.message.text
+        if mtext!=',' and len(mtext)<6 and beer.objects.filter(Keyword__icontains=mtext).count()>0:#關鍵字)
+            beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=mtext)
+        elif ('得獎' in mtext) and len(mtext)<6:#關鍵字
             beers = beer.objects.exclude(AwardRecord='').exclude(time='停產')
-        elif (event.message.text in ['隨便','青菜','盲飲']) and len(event.message.text)<6:#隨機
-            beers = beer.objects.filter(cName=get_random())
+
         beerNum = len(beers) #啤酒數量
         totalPage = int((beerNum)/9) #酒單頁數
         if event.type == 'message':
@@ -479,7 +455,11 @@ def KeyWordBeer(event): #關鍵字酒單生產
 
 def IntrTheBeer(event): #說明單一酒款
     try:
-        thebeer = beer.objects.filter(cName__icontains=event.message.text)#讀取資料
+        mtext = event.message.text
+        if mtext=='盲飲':
+            thebeer = get_random()
+        else:
+            thebeer = beer.objects.filter(cName__icontains=mtext)#讀取資料
 
         if thebeer[0].AwardRecord=='' or thebeer[0].AwardRecord==None:#得獎資訊處理
             AwardRecord=' '
