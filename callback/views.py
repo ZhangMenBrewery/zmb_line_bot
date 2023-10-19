@@ -454,7 +454,7 @@ def IntrTheBeer(event): #說明單一酒款
     try:
         mtext = event.message.text
         if mtext=='盲飲':
-            thebeer = get_random()
+            thebeer = beer.objects.filter(cName=get_random())#讀取資料
         else:
             thebeer = beer.objects.filter(cName__icontains=mtext)#讀取資料
 
