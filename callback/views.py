@@ -172,10 +172,10 @@ def callback(request): #收到訊息
                     SendSticker(event)
 
             elif isinstance(event, PostbackEvent):
-                if event.postback.data.split(":")[0] == "ITB":
+                if len(event.postback.data)>7:
                     IntrBeerMenuFlex(event)
-                elif event.postback.data.split(":")[0] == "KWB":
-                    KeyWordBeer(event)
+                elif event.postback.data[0:4]=="Beer":
+                    IntrBeerMenuFlex(event)
 
             elif isinstance(event, FollowEvent):
                 #WelcomeText(event)
