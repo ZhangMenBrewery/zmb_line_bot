@@ -599,7 +599,7 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
                     footer=BoxComponent(
                         layout='vertical',
                         contents=[
-                            TextComponent(text='Copyright@掌門精釀啤酒 2021', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -689,7 +689,7 @@ def IntrTheBeer(event): #說明單一酒款
             footer=BoxComponent(
                 layout='vertical',
                 contents=[
-                    TextComponent(text='Copyright@掌門精釀啤酒 2021', color='#888888',size='sm',align='center'),
+                    TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
                 ]
             )
         )
@@ -792,7 +792,7 @@ def IntrBeerMenuFlex(event): #說明酒款
                     footer=BoxComponent(
                         layout='vertical',
                         contents=[
-                            TextComponent(text='Copyright@掌門精釀啤酒 2021', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -818,7 +818,7 @@ def IntrBeerMenuFlex(event): #說明酒款
                         layout='vertical',
                         contents=[
                             ButtonComponent(style='primary', height='sm',action=PostbackAction(label='下一頁',data='Beer'+'%03d'%(beerpage+1))),
-                            TextComponent(text='Copyright@掌門精釀啤酒 2021', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
