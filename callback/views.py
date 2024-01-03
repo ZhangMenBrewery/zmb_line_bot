@@ -16,6 +16,7 @@ import git
 import subprocess
 import requests
 import random
+from django.core.paginator import Paginator
 
 line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN_LINEBOT)
 parser = WebhookParser(settings.LINE_CHANNEL_SECRET_LINEBOT)
@@ -105,6 +106,14 @@ def line_callback(request):
     # ...
 
     return JsonResponse(profile_data)
+
+def beer_list(request): #網頁
+    beers = beer.objects.all()
+    paginator = Paginator(beer_list, 50)
+    
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'beer_list.html', {'page_obj': page_obj})
 
 @csrf_exempt
 def callback(request): #收到訊息
@@ -398,7 +407,7 @@ def OneBeer(event, beer): #單一酒款說明
             footer=BoxComponent(
                 layout='vertical',
                 contents=[
-                    TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
+                    TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
                 ]
             )
         )
@@ -483,7 +492,7 @@ def MultiBeer(event, beers): #很多酒款說明
                     footer=BoxComponent(
                         layout='vertical',
                         contents=[
-                            TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -510,7 +519,7 @@ def MultiBeer(event, beers): #很多酒款說明
                         contents=[
                             ButtonComponent(style='primary', height='sm',action=PostbackAction(label='下一頁',\
                                             data=f"ITB:{currentpage+1}%02d")),
-                            TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -599,7 +608,7 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
                     footer=BoxComponent(
                         layout='vertical',
                         contents=[
-                            TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -689,7 +698,7 @@ def IntrTheBeer(event): #說明單一酒款
             footer=BoxComponent(
                 layout='vertical',
                 contents=[
-                    TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
+                    TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
                 ]
             )
         )
@@ -792,7 +801,7 @@ def IntrBeerMenuFlex(event): #說明酒款
                     footer=BoxComponent(
                         layout='vertical',
                         contents=[
-                            TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -818,7 +827,7 @@ def IntrBeerMenuFlex(event): #說明酒款
                         layout='vertical',
                         contents=[
                             ButtonComponent(style='primary', height='sm',action=PostbackAction(label='下一頁',data='Beer'+'%03d'%(beerpage+1))),
-                            TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -917,7 +926,7 @@ def IntrCanMenuFlex(event): #說明鋁罐酒款
                         layout='vertical',
                         contents=[
                             ButtonComponent(style='primary', height='sm',action=PostbackAction(label='下一頁',data='Beer'+'%03d'%(canpage+1))),
-                            TextComponent(text='Copyright@掌門精釀啤酒 2023', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
