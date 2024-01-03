@@ -109,7 +109,7 @@ def line_callback(request):
 
 def beer_list(request): #網頁
     beers = beer.objects.all()
-    paginator = Paginator(beer_list, 50)
+    paginator = Paginator(beers, 50)
     
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
