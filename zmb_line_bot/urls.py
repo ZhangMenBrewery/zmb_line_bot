@@ -25,4 +25,5 @@ urlpatterns = [
     path('callback/', include('callback.urls')),
     path('update_server/', callback.views.update_server, name='update_server'),
     path('accounts/', include('allauth.urls')),
+    path('beers/', callback.views.beer_list, name='beer_list'),
 ]
