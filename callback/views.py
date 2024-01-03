@@ -107,10 +107,10 @@ def line_callback(request):
 
     return JsonResponse(profile_data)
 
-def beer_list(request): #網頁
-    beers = beer.objects.all()
-    paginator = Paginator(beers, 50)
-    
+def beer_list(request):
+    beers = beer.objects.all()  # 確保這裡是查詢集
+    paginator = Paginator(beers, 50)  # 確保這裡使用的是 'beers' 變量
+
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, 'beer_list.html', {'page_obj': page_obj})
