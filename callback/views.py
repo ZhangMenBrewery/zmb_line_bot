@@ -108,7 +108,7 @@ def line_callback(request):
     return JsonResponse(profile_data)
 
 def beer_list(request):
-    beers = beer.objects.all()  # 確保這裡是查詢集
+    beers = beer.objects.exclude(time='停產').order_by('id','tapNum')#讀取資料夾,依照id排序
     paginator = Paginator(beers, 50)  # 確保這裡使用的是 'beers' 變量
 
     page_number = request.GET.get('page')
