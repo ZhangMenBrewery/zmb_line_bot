@@ -7,6 +7,7 @@
     <h1>Beer List</h1>
     <table border="1">
         <tr>
+            <th>ID</th>
             <th>Tap Number</th>
             <th>Time</th>
             <th>Style</th>
@@ -30,6 +31,7 @@
         </tr>
         {% for beer in page_obj %}
             <tr>
+                <td>{{ beer.id }}</td>
                 <td>{{ beer.tapNum }}</td>
                 <td>{{ beer.time }}</td>
                 <td>{{ beer.Style }}</td>
