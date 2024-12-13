@@ -719,8 +719,6 @@ def IntrTheBeer(event): #說明單一酒款
 def IntrBeerMenuFlex(event): #說明酒款
     try:
         beers = beer.objects.exclude(time='停產').order_by('id','tapNum')#讀取資料夾,依照id排序
-        # 將 time='長銷款' 的酒款排在最前面
-        beers = sorted(beers, key=lambda beer: beer.time != '長銷款')
         beerNum = beers.count()#啤酒數量
         totalPage = int((beerNum)/9)#酒單頁數
         if event.type=='message':
