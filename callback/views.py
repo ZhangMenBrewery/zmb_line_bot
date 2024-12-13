@@ -143,13 +143,13 @@ def callback(request): #收到訊息
                         elif len(event.message.text)>1 and beer.objects.filter(cName__icontains=event.message.text).count()>0:#單一酒款
                             IntrTheBeer(event)
                         elif event.message.text!=',' and len(event.message.text)<6 and beer.objects.filter(Keyword__icontains=event.message.text).count()>0:#關鍵字
-                            beers = beer.objects.filter(Keyword__icontains=event.message.text)
+                            beers = beer.objects.filter(Keyword__icontains=event.message.text).exclude(time='停產')
                             KeyWordBeer(event,beers)
                         elif ('得獎' in event.message.text) and len(event.message.text)<6:#關鍵字
-                            beers = beer.objects.exclude(AwardRecord='')
+                            beers = beer.objects.exclude(AwardRecord='').exclude(time='停產')
                             KeyWordBeer(event,beers)
                         elif (event.message.text in ['隨便','青菜',]) and len(event.message.text)<6:#隨機
-                            beers = beer.objects.filter(cName=get_random())
+                            beers = beer.objects.filter(cName=get_random()).exclude(time='停產')
                             KeyWordBeer(event,beers)
                         elif (mtext in ['台虎','臺虎','台啤','蔡氏','金色三麥','酉鬼','啤酒頭','吉姆老爹']):#黑名單:       
                             message = [
@@ -241,7 +241,7 @@ def Reserver(event): #訂位圖文
     try:       
         message = [
             TextSendMessage(
-                text="您好！\n掌門精釀台灣各分店-電話訂位資訊\nhttps://www.zhangmen.co/#store\n謝謝。"
+                text="您好！\n掌門精釀台灣各分店-電話訂位資訊\nhttps://www.zhangmen.co/store.html\n謝謝。"
             ),
             ImagemapSendMessage(
                 base_url='https://i.imgur.com/SBBZUFu.png',
@@ -249,7 +249,7 @@ def Reserver(event): #訂位圖文
                 base_size=BaseSize(height=1024, width=1024),
                 actions=[
                     URIImagemapAction(
-                        link_uri='https://www.zhangmen.co/#store',
+                        link_uri='https://www.zhangmen.co/store.html',
                         area=ImagemapArea(
                             x=0, y=0, width=1024, height=1024
                         )
@@ -535,12 +535,15 @@ def MultiBeer(event, beers): #很多酒款說明
 
 def KeyWordBeer(event,beers): #關鍵字酒單生產
     try:
+        # 將 time='長銷款' 的酒款排在最前面
+        beers = sorted(beers, key=lambda beer: beer.time != '長銷款')
+        
         bubbles=[]
         for beer in beers:
             if beer.AwardRecord=='' or beer.AwardRecord==None:#得獎資訊處理
                 AwardRecord=' '
             else:
-                AwardRecord="🏆"+beer.AwardRecord.replace('\n','\n🏆')
+                AwardRecord="🏆"+beer.AwardRecord.replace(',','\n🏆')
             abv=''
             if int(beer.ABV)<10:#酒精強度
                 i=0
@@ -629,7 +632,7 @@ def IntrTheBeer(event): #說明單一酒款
         if thebeer[0].AwardRecord=='' or thebeer[0].AwardRecord==None:#得獎資訊處理
             AwardRecord=' '
         else:
-            AwardRecord="🏆"+thebeer[0].AwardRecord.replace('\n','\n🏆')
+            AwardRecord="🏆"+thebeer[0].AwardRecord.replace(',','\n🏆')
 
         abv=''
         if int(thebeer[0].ABV)<10:#酒精強度
@@ -713,6 +716,8 @@ def IntrTheBeer(event): #說明單一酒款
 def IntrBeerMenuFlex(event): #說明酒款
     try:
         beers = beer.objects.exclude(time='停產').order_by('id','tapNum')#讀取資料夾,依照id排序
+        # 將 time='長銷款' 的酒款排在最前面
+        beers = sorted(beers, key=lambda beer: beer.time != '長銷款')
         beerNum = beers.count()#啤酒數量
         totalPage = int((beerNum)/9)#酒單頁數
         if event.type=='message':
@@ -731,7 +736,7 @@ def IntrBeerMenuFlex(event): #說明酒款
             if beers[b].AwardRecord=='' or beers[b].AwardRecord==None:#得獎資訊處理
                 AwardRecord=' '
             else:
-                AwardRecord="🏆"+beers[b].AwardRecord.replace('\n','\n🏆')
+                AwardRecord="🏆"+beers[b].AwardRecord.replace(',','\n🏆')
 
             abv=''
             if int(beers[b].ABV)<10:#酒精強度
