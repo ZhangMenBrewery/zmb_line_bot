@@ -540,6 +540,9 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
         
         bubbles=[]
         for beer in beers:
+            if beer.time == '停產':  # 過濾停產酒款
+                continue
+
             if beer.AwardRecord=='' or beer.AwardRecord==None:#得獎資訊處理
                 AwardRecord=' '
             else:
