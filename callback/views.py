@@ -241,7 +241,7 @@ def Reserver(event): #訂位圖文
     try:       
         message = [
             TextSendMessage(
-                text="您好！\n掌門精釀台灣各分店-電話訂位資訊\nhttps://lihi.cc/Yrg51\n謝謝。"
+                text="您好！\n掌門精釀台灣各分店-電話訂位資訊\nhttps://www.zhangmen.co/#store\n謝謝。"
             ),
             ImagemapSendMessage(
                 base_url='https://i.imgur.com/SBBZUFu.png',
@@ -249,7 +249,7 @@ def Reserver(event): #訂位圖文
                 base_size=BaseSize(height=1024, width=1024),
                 actions=[
                     URIImagemapAction(
-                        link_uri='https://lihi.cc/Yrg51',
+                        link_uri='https://www.zhangmen.co/#store',
                         area=ImagemapArea(
                             x=0, y=0, width=1024, height=1024
                         )
@@ -326,7 +326,7 @@ def Award(beer):
     if beer.AwardRecord=='' or beer.AwardRecord==None:#得獎資訊處理
         AwardRecord=' '
     else:
-        AwardRecord="🏆"+beer.AwardRecord.replace('\n','\n🏆')
+        AwardRecord="🏆"+beer.AwardRecord.replace(',','\n🏆')
     return AwardRecord
 
 def ABV_Level(beer):
