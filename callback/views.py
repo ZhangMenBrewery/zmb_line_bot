@@ -162,7 +162,7 @@ def callback(request): #收到訊息
                     try:
                         mtext = event.message.text
                         if '訂位' in mtext:
-                            Reserver(event)
+                            pass #電話訂位已由LINE官方帳號後台的自動回應處理，機器人不回覆
                         elif mtext == '酒款介紹':#產生quickreply buttom
                             reply_message_with_quick_reply(event)
                         elif mtext == '全部': 
@@ -170,8 +170,8 @@ def callback(request): #收到訊息
                             IntrBeerMenuFlex(event)
                         elif len(event.message.text)>1 and beer.objects.filter(cName__icontains=event.message.text).count()>0:#單一酒款
                             IntrTheBeer(event)
-                        elif event.message.text!=',' and len(event.message.text)<6 and beer.objects.filter(Keyword__icontains=event.message.text).count()>0:#關鍵字
-                            beers = beer.objects.filter(Keyword__icontains=event.message.text)
+                        elif event.message.text!=',' and len(event.message.text)<6 and beer.objects.exclude(time='停產').filter(Keyword__icontains=event.message.text).count()>0:#關鍵字
+                            beers = beer.objects.exclude(time='停產').filter(Keyword__icontains=event.message.text)
                             KeyWordBeer(event,beers)
                         elif ('得獎' in event.message.text) and len(event.message.text)<6:#關鍵字
                             beers = beer.objects.exclude(AwardRecord='')
@@ -266,7 +266,7 @@ def WelcomeText(event): #歡迎文字
         TextSendMessage(text='發生錯誤'))
 
 def Reserver(event): #訂位圖文
-    try:       
+    try:
         message = [
             TextSendMessage(
                 text="您好！\n掌門精釀台灣各分店-電話訂位資訊\nhttps://lihi.cc/Yrg51\n謝謝。"
@@ -343,10 +343,10 @@ def reply_message_with_quick_reply(event): #回覆按鈕
     line_bot_api.reply_message(event.reply_token, message)
 
 def get_random(): #隨機酒款
-    max_id = beer.objects.all().aggregate(max_id=Max("id"))['max_id']
+    max_id = beer.objects.exclude(time='停產').aggregate(max_id=Max("id"))['max_id']
     while True:
         pk = random.randint(1, max_id)
-        Beer = beer.objects.filter(pk=pk).first()
+        Beer = beer.objects.filter(pk=pk).exclude(time='停產').first()
         if Beer:
             return Beer
 
