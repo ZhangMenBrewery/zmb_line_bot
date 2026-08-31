@@ -2,7 +2,12 @@ from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
-from django.db.models import Max
+from django.db.models import Max, Count
+from django.db.models.functions import TruncDate
+from django.utils import timezone
+from django.core.cache import cache
+from datetime import timedelta
+import re
 
 from linebot import LineBotApi, WebhookParser
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
@@ -11,7 +16,7 @@ from linebot.models import TextMessage, MessageEvent, TextSendMessage, StickerMe
         URIImagemapAction, ImagemapArea, QuickReplyButton, QuickReply, MessageAction, TextComponent, BubbleContainer,\
         BoxComponent, SeparatorComponent, FlexSendMessage, ImageComponent, CarouselContainer, ButtonComponent, PostbackAction,\
         URIAction
-from callback.models import beer, can
+from callback.models import beer, can, usage_log, line_user
 import git
 import subprocess
 import requests
@@ -108,7 +113,7 @@ def line_callback(request):
     return JsonResponse(profile_data)
 
 def beer_list(request):
-    beers = beer.objects.exclude(time='停產').order_by('id','tapNum')#讀取資料夾,依照id排序
+    beers = beer.objects.exclude(time='停產').order_by('id','position')#讀取資料夾,依照id排序
     paginator = Paginator(beers, 50)  # 確保這裡使用的是 'beers' 變量
 
     page_number = request.GET.get('page')
@@ -129,6 +134,29 @@ def callback(request): #收到訊息
             return HttpResponseBadRequest()
         
         for event in events:
+            try:# 使用統計記錄
+                src = getattr(event, 'source', None)
+                uid = getattr(src, 'user_id', None) or getattr(src, 'group_id', None) or 'unknown'
+                uname = ''
+                if getattr(src, 'user_id', None):
+                    lu, created = line_user.objects.get_or_create(user_id=uid)
+                    if created or not lu.display_name:
+                        try:
+                            pr = requests.get('https://api.line.me/v2/bot/profile/' + uid, headers={'Authorization': 'Bearer ' + settings.LINE_CHANNEL_ACCESS_TOKEN_LINEBOT}, timeout=5)
+                            if pr.status_code == 200:
+                                pj = pr.json()
+                                lu.display_name = pj.get('displayName', '')
+                                lu.picture_url = pj.get('pictureUrl', '') or ''
+                                lu.save()
+                        except Exception:
+                            pass
+                    uname = lu.display_name
+                if isinstance(event, MessageEvent):
+                    usage_log.objects.create(user_id=uid, user_name=uname, event_type='message', content=(event.message.text or '')[:100])
+                elif isinstance(event, PostbackEvent):
+                    usage_log.objects.create(user_id=uid, user_name=uname, event_type='postback', content=(event.postback.data or '')[:100])
+            except Exception:
+                pass
             if isinstance(event, MessageEvent):
                 if isinstance(event.message, TextMessage): #處理文字訊息
                     try:
@@ -712,7 +740,7 @@ def IntrTheBeer(event): #說明單一酒款
 
 def IntrBeerMenuFlex(event): #說明酒款
     try:
-        beers = beer.objects.exclude(time='停產').order_by('id','tapNum')#讀取資料夾,依照id排序
+        beers = beer.objects.exclude(time='停產').order_by('id','position')#讀取資料夾,依照id排序
         beerNum = beers.count()#啤酒數量
         totalPage = int((beerNum)/9)#酒單頁數
         if event.type=='message':
@@ -952,3 +980,142 @@ def SendSticker(event): #回覆表情
     except:
         line_bot_api.reply_message(event.reply_token,
         TextSendMessage(text='維護中，稍後再試。'))
+def usage_stats_dashboard(request): #後台統計分頁
+    from django.contrib import admin
+    return render(request, 'admin/usage_stats.html', dict(admin.site.each_context(request), title='使用統計'))
+
+def usage_stats_data(request): #後台統計圖表資料（最近30天）
+    days = 30
+    today = timezone.localdate()
+    start = today - timedelta(days=days - 1)
+    rows = (usage_log.objects.filter(timestamp__date__gte=start)
+            .annotate(day=TruncDate('timestamp'))
+            .values('day')
+            .annotate(n=Count('id'), u=Count('user_id', distinct=True)))
+    day_map = {r['day']: (r['n'], r['u']) for r in rows}
+    labels, msgs, users = [], [], []
+    for i in range(days - 1, -1, -1):
+        d = today - timedelta(days=i)
+        labels.append(d.strftime('%m/%d'))
+        n, u = day_map.get(d, (0, 0))
+        msgs.append(n)
+        users.append(u)
+
+    def period_stats(s):
+        r = usage_log.objects.filter(timestamp__date__gte=s).aggregate(n=Count('id'), u=Count('user_id', distinct=True))
+        return r['n'], r['u']
+
+    today_msgs, today_users = period_stats(today)
+    week_msgs, week_users = period_stats(today - timedelta(days=6))
+
+    beer_names = set(beer.objects.values_list('cName', flat=True))
+    keywords = set()
+    for k in beer.objects.exclude(Keyword='').values_list('Keyword', flat=True):
+        keywords.update(k.split(','))
+
+    def classify(content):
+        if content in ('酒款介紹', 'RM:menu', 'RM:menu2'):
+            return '開啟選單'
+        if content in ('得獎', 'RM:award') or content.startswith('Award|'):
+            return '得獎查詢'
+        if content == '全部':
+            return '全部酒單'
+        if content in ('隨便', '青菜'):
+            return '隨機推薦'
+        if content in beer_names:
+            return '單一酒款查詢'
+        if any(k and content in k for k in keywords):
+            return '關鍵字搜尋'
+        return '其他'
+
+    intent_counter = {}
+    top_beers_counter = {}
+    hour_counter = {}
+    for r in usage_log.objects.filter(timestamp__date__gte=start, event_type='message').values('content', 'timestamp'):
+        content = r['content']
+        intent_counter[classify(content)] = intent_counter.get(classify(content), 0) + 1
+        matched = next((bn for bn in beer_names if bn and content in bn), None)
+        if matched:
+            top_beers_counter[matched] = top_beers_counter.get(matched, 0) + 1
+        h = timezone.localtime(r['timestamp']).hour
+        hour_counter[h] = hour_counter.get(h, 0) + 1
+    intents = sorted(intent_counter.items(), key=lambda x: -x[1])
+    top_beers = sorted(top_beers_counter.items(), key=lambda x: -x[1])[:10]
+    hours_data = [hour_counter.get(h, 0) for h in range(24)]
+
+    # LINE 好友統計（性別/年齡/地區，快取 1 小時）
+    demo = cache.get('line_demographic_v3')
+    if demo is None:
+        demo = {'areas': [], 'genders': [], 'ages': []}  # API 失敗時的預設空值
+        areas = []
+        try:
+            TOKEN = settings.LINE_CHANNEL_ACCESS_TOKEN_LINEBOT
+            r = requests.get('https://api.line.me/v2/bot/insight/demographic', headers={'Authorization': 'Bearer ' + TOKEN}, timeout=15)
+            if r.status_code == 200:
+                dj = r.json()
+                for a in dj.get('areas', []):
+                    if a.get('percentage', 0) > 0 and (a.get('area') or '').lower() != 'unknown':
+                        areas.append({'area': a.get('area'), 'p': a.get('percentage')})
+                areas.sort(key=lambda x: -x['p'])
+                gmap = {'male': '男性', 'female': '女性'}
+                genders = [{'gender': gmap.get(g.get('gender'), g.get('gender')), 'p': g.get('percentage')} for g in dj.get('genders', []) if g.get('percentage', 0) > 0 and g.get('gender') != 'unknown']
+                tmp = []
+                for a in dj.get('ages', []):
+                    if a.get('percentage', 0) > 0 and a.get('age') != 'unknown':
+                        name = a.get('age') or ''
+                        if name == 'from50':  # 50歲以上累計值，與細分區間重複
+                            continue
+                        m = re.match(r'from(\d+)(?:to(\d+))?$', name)
+                        if m:
+                            lo = int(m.group(1))
+                            label = str(lo) + '-' + m.group(2) + '歲' if m.group(2) else str(lo) + '歲以上'
+                        else:
+                            lo, label = 999, name
+                        tmp.append((lo, label, a.get('percentage')))
+                tmp.sort(key=lambda x: x[0])
+                ages = [{'age': label, 'p': p} for lo, label, p in tmp]
+                demo = {'areas': areas, 'genders': genders, 'ages': ages}
+                cache.set('line_demographic_v3', demo, 3600)
+            else:
+                import logging
+                logging.getLogger(__name__).warning('LINE demographic API status: %s', r.status_code)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception('LINE demographic API error')
+
+    # LINE 官方追蹤者趨勢（快取 1 小時）
+    fol = cache.get('line_followers')
+    if fol is None:
+        import time
+        flabels, fcounts = [], []
+        for i in range(29, -1, -1):
+            d = today - timedelta(days=i)
+            try:
+                r = requests.get('https://api.line.me/v2/bot/insight/followers', params={'date': d.strftime('%Y%m%d')}, headers={'Authorization': 'Bearer ' + settings.LINE_CHANNEL_ACCESS_TOKEN_LINEBOT}, timeout=10)
+                n = r.json().get('followers', 0) if r.status_code == 200 else 0
+            except Exception:
+                n = 0
+            flabels.append(d.strftime('%m/%d'))
+            fcounts.append(n)
+            time.sleep(0.2)
+        fol = {'labels': flabels, 'counts': fcounts}
+        if fcounts[-1] > 0:  # 今天有數據才快取（被限流時不快取，下次再試）
+            cache.set('line_followers', fol, 3600)
+
+    # 沉睡使用者（超過14天未互動）
+    cutoff = timezone.now() - timedelta(days=14)
+    drows = line_user.objects.filter(last_seen__lt=cutoff).order_by('last_seen')[:50]
+    dormant = {'count': line_user.objects.filter(last_seen__lt=cutoff).count(),
+               'list': [{'name': u.display_name or u.user_id, 'last': timezone.localtime(u.last_seen).strftime('%m/%d')} for u in drows]}
+
+    return JsonResponse({
+        'labels': labels, 'msgs': msgs, 'users': users,
+        'today': {'msgs': today_msgs, 'users': today_users},
+        'week': {'msgs': week_msgs, 'users': week_users},
+        'intents': [{'intent': i, 'n': n} for i, n in intents],
+        'top_beers': [{'beer': b, 'n': n} for b, n in top_beers],
+        'hours': hours_data,
+        'followers': fol,
+        'genders': demo.get('genders', []), 'ages': demo.get('ages', []), 'areas': demo.get('areas', []),
+        'dormant': dormant,
+    })

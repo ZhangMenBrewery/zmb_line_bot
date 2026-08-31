@@ -1,0 +1,9 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+<div style="background:#fff;border:1px solid #ddd;border-radius:10px;padding:16px 20px;margin-bottom:20px;">
+  <h2 style="margin-top:0;">📊 <a href="/admin/usage_stats/">使用統計分析</a></h2>
+  <p style="color:#666;margin-bottom:0;">訊息趨勢、人氣酒款、熱門時段、追蹤者增長、好友分布、沉睡使用者名單</p>
+</div>
+{{ block.super }}
+{% endblock %}

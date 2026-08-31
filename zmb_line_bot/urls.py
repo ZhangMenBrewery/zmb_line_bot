@@ -17,13 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 import callback.views
-import allauth.account.views
 
 
 urlpatterns = [
+    path('admin/usage_stats/', admin.site.admin_view(callback.views.usage_stats_dashboard), name='usage_stats'),
+    path('admin/usage_data/', admin.site.admin_view(callback.views.usage_stats_data), name='usage_data'),
     path('admin/', admin.site.urls),
     path('callback/', include('callback.urls')),
     path('update_server/', callback.views.update_server, name='update_server'),
-    path('accounts/', include('allauth.urls')),
     path('beers/', callback.views.beer_list, name='beer_list'),
 ]

@@ -1,0 +1,172 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div style="margin-bottom:20px;">
+  <h1>使用統計（最近 30 天）</h1>
+
+  <div style="display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:140px;background:#fff;border:1px solid #ddd;border-radius:10px;padding:14px 18px;border-left:5px solid #4472C4;">
+      <div style="font-size:13px;color:#666;">今日訊息數</div>
+      <div id="stat-today-msgs" style="font-size:28px;font-weight:bold;">-</div>
+    </div>
+    <div style="flex:1;min-width:140px;background:#fff;border:1px solid #ddd;border-radius:10px;padding:14px 18px;border-left:5px solid #E74C3C;">
+      <div style="font-size:13px;color:#666;">今日使用人次</div>
+      <div id="stat-today-users" style="font-size:28px;font-weight:bold;">-</div>
+    </div>
+    <div style="flex:1;min-width:140px;background:#fff;border:1px solid #ddd;border-radius:10px;padding:14px 18px;border-left:5px solid #4E9E52;">
+      <div style="font-size:13px;color:#666;">7 天訊息數</div>
+      <div id="stat-week-msgs" style="font-size:28px;font-weight:bold;">-</div>
+    </div>
+    <div style="flex:1;min-width:140px;background:#fff;border:1px solid #ddd;border-radius:10px;padding:14px 18px;border-left:5px solid #F39C12;">
+      <div style="font-size:13px;color:#666;">7 天使用人次</div>
+      <div id="stat-week-users" style="font-size:28px;font-weight:bold;">-</div>
+    </div>
+  </div>
+
+  <canvas id="usageChart" height="110"></canvas>
+
+  <div style="display:flex;gap:40px;margin-top:20px;align-items:flex-start;flex-wrap:wrap;">
+    <div>
+      <h2>使用意圖分布</h2>
+      <canvas id="cmdChart" width="340" height="260"></canvas>
+    </div>
+    <div>
+      <h2>人氣酒款 TOP 10</h2>
+      <canvas id="topBeersChart" width="340" height="260"></canvas>
+    </div>
+  </div>
+
+  <h2 style="margin-top:20px;">熱門時段（24 小時）</h2>
+  <canvas id="hourChart" height="110"></canvas>
+
+  <h2 style="margin-top:20px;">追蹤者增長</h2>
+  <canvas id="followersChart" height="110"></canvas>
+
+  <div style="display:flex;gap:40px;margin-top:20px;align-items:flex-start;flex-wrap:wrap;">
+    <div>
+      <h2>性別分布</h2>
+      <canvas id="genderChart" width="300" height="240"></canvas>
+    </div>
+    <div>
+      <h2>年齡分布</h2>
+      <canvas id="ageChart" width="340" height="240"></canvas>
+    </div>
+    <div>
+      <h2>使用者地區分布（好友統計）</h2>
+      <canvas id="areaChart" width="340" height="240"></canvas>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;">
+    <h2>😴 沉睡使用者（超過 14 天未互動）</h2>
+    <div style="font-size:14px;color:#666;">共 <b id="dormant-count">-</b> 位</div>
+    <ul id="dormant-list" style="columns:3;max-width:600px;"></ul>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const COLORS = ['#4472C4', '#E74C3C', '#4E9E52', '#F39C12', '#9B59B6', '#1ABC9C', '#E67E22', '#34495E', '#95A5A6', '#D35400'];
+
+    fetch('/admin/usage_data/', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        new Chart(document.getElementById('usageChart'), {
+          type: 'line',
+          data: {
+            labels: d.labels,
+            datasets: [
+              {label: '每日訊息數', data: d.msgs, borderColor: '#4472C4', backgroundColor: '#4472C4', tension: 0.3},
+              {label: '每日使用人次', data: d.users, borderColor: '#E74C3C', backgroundColor: '#E74C3C', tension: 0.3}
+            ]
+          },
+          options: {
+            scales: {y: {beginAtZero: true, ticks: {precision: 0}}},
+            plugins: {legend: {display: true}}
+          }
+        });
+        new Chart(document.getElementById('cmdChart'), {
+          type: 'doughnut',
+          data: {
+            labels: d.intents.map(function (c) { return c.intent; }),
+            datasets: [{data: d.intents.map(function (c) { return c.n; }), backgroundColor: COLORS}]
+          },
+          options: {plugins: {legend: {position: 'bottom'}}}
+        });
+        new Chart(document.getElementById('topBeersChart'), {
+          type: 'bar',
+          data: {
+            labels: d.top_beers.map(function (b) { return b.beer; }),
+            datasets: [{label: '查詢次數', data: d.top_beers.map(function (b) { return b.n; }), backgroundColor: '#F39C12'}]
+          },
+          options: {
+            indexAxis: 'y',
+            scales: {x: {beginAtZero: true, ticks: {precision: 0}}},
+            plugins: {legend: {display: false}}
+          }
+        });
+        new Chart(document.getElementById('hourChart'), {
+          type: 'bar',
+          data: {
+            labels: d.hours.map(function (v, i) { return i + '時'; }),
+            datasets: [{label: '訊息數', data: d.hours, backgroundColor: '#4472C4'}]
+          },
+          options: {
+            scales: {y: {beginAtZero: true, ticks: {precision: 0}}},
+            plugins: {legend: {display: false}}
+          }
+        });
+        new Chart(document.getElementById('followersChart'), {
+          type: 'line',
+          data: {
+            labels: d.followers.labels,
+            datasets: [{label: '追蹤者數', data: d.followers.counts, borderColor: '#4E9E52', backgroundColor: '#4E9E52', tension: 0.3, fill: true}]
+          },
+          options: {plugins: {legend: {display: false}}}
+        });
+        new Chart(document.getElementById('genderChart'), {
+          type: 'doughnut',
+          data: {
+            labels: d.genders.map(function (g) { return g.gender; }),
+            datasets: [{data: d.genders.map(function (g) { return g.p; }), backgroundColor: ['#4472C4', '#E74C3C', '#95A5A6']}]
+          },
+          options: {plugins: {legend: {position: 'bottom'}}}
+        });
+        new Chart(document.getElementById('ageChart'), {
+          type: 'bar',
+          data: {
+            labels: d.ages.map(function (a) { return a.age; }),
+            datasets: [{label: '比例 %', data: d.ages.map(function (a) { return a.p; }), backgroundColor: '#9B59B6'}]
+          },
+          options: {
+            scales: {y: {beginAtZero: true}},
+            plugins: {legend: {display: false}}
+          }
+        });
+        new Chart(document.getElementById('areaChart'), {
+          type: 'bar',
+          data: {
+            labels: d.areas.map(function (a) { return a.area; }),
+            datasets: [{label: '好友比例 %', data: d.areas.map(function (a) { return a.p; }), backgroundColor: '#4E9E52'}]
+          },
+          options: {
+            indexAxis: 'y',
+            scales: {x: {beginAtZero: true}},
+            plugins: {legend: {display: false}}
+          }
+        });
+        document.getElementById('stat-today-msgs').textContent = d.today.msgs;
+        document.getElementById('stat-today-users').textContent = d.today.users;
+        document.getElementById('stat-week-msgs').textContent = d.week.msgs;
+        document.getElementById('stat-week-users').textContent = d.week.users;
+        document.getElementById('dormant-count').textContent = d.dormant.count;
+        const ul = document.getElementById('dormant-list');
+        d.dormant.list.forEach(function (u) {
+          const li = document.createElement('li');
+          li.textContent = u.name + '（最後互動 ' + u.last + '）';
+          ul.appendChild(li);
+        });
+      });
+  });
+</script>
+{% endblock %}
