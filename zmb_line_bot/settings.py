@@ -38,6 +38,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = [h.strip() for h in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
 
+CSRF_TRUSTED_ORIGINS = ['https://uninjured-cesarean-cofounder.ngrok-free.dev']  #ngrok 外部登入用
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  #讓 Django 知道請求是透過 ngrok 的 HTTPS 進來
+
 
 # Application definition
 
