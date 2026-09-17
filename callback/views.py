@@ -435,7 +435,7 @@ def OneBeer(event, beer): #單一酒款說明
             footer=BoxComponent(
                 layout='vertical',
                 contents=[
-                    TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
+                    TextComponent(text='Copyright@掌門精釀啤酒 ' + str(timezone.localdate().year), color='#888888',size='sm',align='center'),
                 ]
             )
         )
@@ -520,7 +520,7 @@ def MultiBeer(event, beers): #很多酒款說明
                     footer=BoxComponent(
                         layout='vertical',
                         contents=[
-                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 ' + str(timezone.localdate().year), color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -547,7 +547,7 @@ def MultiBeer(event, beers): #很多酒款說明
                         contents=[
                             ButtonComponent(style='primary', height='sm',action=PostbackAction(label='下一頁',\
                                             data=f"ITB:{currentpage+1}%02d")),
-                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 ' + str(timezone.localdate().year), color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -636,7 +636,7 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
                     footer=BoxComponent(
                         layout='vertical',
                         contents=[
-                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 ' + str(timezone.localdate().year), color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -726,7 +726,7 @@ def IntrTheBeer(event): #說明單一酒款
             footer=BoxComponent(
                 layout='vertical',
                 contents=[
-                    TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
+                    TextComponent(text='Copyright@掌門精釀啤酒 ' + str(timezone.localdate().year), color='#888888',size='sm',align='center'),
                 ]
             )
         )
@@ -829,7 +829,7 @@ def IntrBeerMenuFlex(event): #說明酒款
                     footer=BoxComponent(
                         layout='vertical',
                         contents=[
-                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 ' + str(timezone.localdate().year), color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -855,7 +855,7 @@ def IntrBeerMenuFlex(event): #說明酒款
                         layout='vertical',
                         contents=[
                             ButtonComponent(style='primary', height='sm',action=PostbackAction(label='下一頁',data='Beer'+'%03d'%(beerpage+1))),
-                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 ' + str(timezone.localdate().year), color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
@@ -954,7 +954,7 @@ def IntrCanMenuFlex(event): #說明鋁罐酒款
                         layout='vertical',
                         contents=[
                             ButtonComponent(style='primary', height='sm',action=PostbackAction(label='下一頁',data='Beer'+'%03d'%(canpage+1))),
-                            TextComponent(text='Copyright@掌門精釀啤酒 2024', color='#888888',size='sm',align='center'),
+                            TextComponent(text='Copyright@掌門精釀啤酒 ' + str(timezone.localdate().year), color='#888888',size='sm',align='center'),
                         ]
                     )
                 )
