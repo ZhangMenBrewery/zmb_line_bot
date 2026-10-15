@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>AuthDev</h1>
+<h3>註冊</h3>
+
+<form action="" method="POST">
+    {% csrf_token %}
+
+    {{ form }}
+
+    <br />
+    <input type="submit" class="btn btn-success" value="儲存">
+</form>
+
+{% endblock  %}

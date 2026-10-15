@@ -1,0 +1,55 @@
+{% extends "admin/change_form.html" %}
+
+{% block after_field_sets %}
+<style>
+  #line-card-preview { width: 320px; background:#fff; border:1px solid #ddd; border-radius:12px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,.15); font-family:sans-serif; color:#111; }
+  #line-card-preview .lc-img-wrap { position:relative; padding-top:75%; background:#f5f5f5; }
+  #line-card-preview .lc-img-wrap img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; }
+  #line-card-preview .lc-placeholder { position:absolute; top:50%; left:0; width:100%; transform:translateY(-50%); text-align:center; color:#aaa; font-size:14px; }
+  #line-card-preview .lc-body { padding:12px 14px; position:relative; }
+  #line-card-preview .lc-badge-wrap { text-align:right; margin-bottom:4px; }
+  #line-card-preview .lc-badge { display:inline-block; background:#ff334b; color:#fff; font-size:12px; padding:2px 10px; border-radius:10px; }
+  #line-card-preview .lc-cname { font-size:18px; font-weight:bold; }
+  #line-card-preview .lc-ename { font-size:14px; font-weight:bold; }
+  #line-card-preview .lc-style { font-size:13px; color:#555; margin-bottom:6px; }
+  #line-card-preview .lc-meta { font-size:13px; color:#999; border-bottom:1px solid #33c; padding-bottom:4px; }
+  #line-card-preview .lc-meta2 { font-size:13px; color:#333; margin-top:4px; }
+  #line-card-preview .lc-award { font-size:13px; color:#666; margin-top:6px; font-weight:bold; }
+  #line-card-preview .lc-text { font-size:13px; color:#666; margin-top:6px; }
+  #line-card-preview .lc-copy { font-size:11px; color:#999; margin-top:8px; text-align:center; }
+  #img-info { color:#666; }
+</style>
+<div style="margin-top:16px;">
+  <h2>LINE 圖卡預覽</h2>
+  {{ card_preview }}
+  <p id="img-info">選擇新圖片後預覽會即時更新（儲存前不會生效）。建議 4:3 橫式（1200x900）、JPEG/PNG、1MB 以內。</p>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const input = document.querySelector('input[type=file][name="image"]');
+  const img = document.getElementById('card-preview-img');
+  const placeholder = document.getElementById('card-preview-placeholder');
+  const info = document.getElementById('img-info');
+  if (!input) { return; }
+  input.addEventListener('change', function () {
+    if (this.files && this.files[0]) {
+      const f = this.files[0];
+      const url = URL.createObjectURL(f);
+      if (placeholder) { placeholder.style.display = 'none'; }
+      if (img) {
+        img.style.display = 'block';
+        img.src = url;
+      }
+      const im = new Image();
+      im.onload = function () {
+        let msg = '選擇的圖片：' + im.naturalWidth + ' x ' + im.naturalHeight + '，' + Math.round(f.size / 1024) + ' KB';
+        if (f.size > 1024 * 1024) { msg += ' ｜⚠ 超過 1MB'; }
+        if (Math.abs(im.naturalWidth / im.naturalHeight - 4 / 3) > 0.05) { msg += ' ｜比例非 4:3（顯示時會自動裁切）'; }
+        if (info) { info.textContent = msg; }
+      };
+      im.src = url;
+    }
+  });
+});
+</script>
+{% endblock %}

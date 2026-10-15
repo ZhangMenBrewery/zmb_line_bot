@@ -4,8 +4,17 @@ from django.utils.html import escape, format_html
 from callback.models import beer, can, usage_log, line_user
 
 class beerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'position', 'time', 'Validity_period', 'Style', 'eName', 'cName', 'ABV', 'IBU', 'SRM', 'Keyword', 'Description')
-    
+    list_display = ('id', 'image_thumb', 'position', 'time', 'Validity_period', 'Style', 'eName', 'cName', 'ABV', 'IBU', 'SRM', 'Keyword', 'Description')
+
+    @admin.display(description='圖片')
+    def image_thumb(self, obj):
+        if obj.image:
+            return format_html(
+                '<a href="{0}" target="_blank"><img src="{0}" style="height:60px;border-radius:4px;" /></a>',
+                obj.image.url
+            )
+        return '—'
+
     # 使用Case和When來定義排序條件，將time為'停產'的放在最後面
     ordering = (
         Case(
