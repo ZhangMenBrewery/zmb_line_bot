@@ -26,6 +26,12 @@ from django.core.paginator import Paginator
 line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN_LINEBOT)
 parser = WebhookParser(settings.LINE_CHANNEL_SECRET_LINEBOT)
 
+def beer_hero(beer_obj):#有上傳圖片時，回傳圖卡上方的酒款圖片(hero)
+    if beer_obj.image:
+        base = getattr(settings, 'PUBLIC_BASE_URL', 'https://uninjured-cesarean-cofounder.ngrok-free.dev')
+        return {'hero': ImageComponent(url=base + beer_obj.image.url, size='full', aspect_ratio='4:3', aspect_mode='cover')}
+    return {}
+
 @csrf_exempt
 def update_server(request):
     if request.method == 'POST':
@@ -388,6 +394,7 @@ def OneBeer(event, beer): #單一酒款說明
         description_text = '說明:' + str(beer.Description).replace('None', '')
 
         bubble=BubbleContainer(
+            **beer_hero(beer),
             direction='ltr',
             body=BoxComponent(
                 layout='vertical',
@@ -473,6 +480,7 @@ def MultiBeer(event, beers): #很多酒款說明
 
             bubbles.append(#酒單排版
                 BubbleContainer(
+                    **beer_hero(beers[b]),
                     direction='ltr',
                     body=BoxComponent(
                         layout='vertical',
@@ -589,6 +597,7 @@ def KeyWordBeer(event,beers): #關鍵字酒單生產
                 bubbles=[]
             bubbles.append(#酒單排版
                 BubbleContainer(
+                    **beer_hero(beer),
                     direction='ltr',
                     body=BoxComponent(
                         layout='vertical',
@@ -679,6 +688,7 @@ def IntrTheBeer(event): #說明單一酒款
 
 
         bubble=BubbleContainer(
+            **beer_hero(thebeer[0]),
             direction='ltr',
             body=BoxComponent(
                 layout='vertical',
@@ -782,6 +792,7 @@ def IntrBeerMenuFlex(event): #說明酒款
 
             bubbles.append(#酒單排版
                 BubbleContainer(
+                    **beer_hero(beers[b]),
                     direction='ltr',
                     body=BoxComponent(
                         layout='vertical',
